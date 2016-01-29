@@ -11,7 +11,8 @@
 
 #define _BSD_SOURCE
 
-#include <sys/time.h>
+#include <rudp/compat.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -53,7 +54,7 @@ enum peer_state
 void rudp_peer_reset(struct rudp_peer *peer)
 {
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item)
+    rudp_list_for_each_safe(struct rudp_packet_chain*, pc, tmp, &peer->sendq, chain_item)
     {
         rudp_list_remove(&pc->chain_item);
         rudp_packet_chain_free(peer->rudp, pc);
@@ -176,6 +177,7 @@ enum packet_state peer_analyse_unreliable(
     uint16_t reliable_seq,
     uint16_t unreliable_seq)
 {
+    int16_t unreliable_delta;
     rudp_log_printf(peer->rudp, RUDP_LOG_IO,
                     "%s rel %04x == %04x, unrel %04x >= %04x\n",
                     __FUNCTION__,
@@ -185,7 +187,7 @@ enum packet_state peer_analyse_unreliable(
     if ( peer->in_seq_reliable != reliable_seq )
         return UNSEQUENCED;
 
-    int16_t unreliable_delta = unreliable_seq - peer->in_seq_unreliable;
+    unreliable_delta = unreliable_seq - peer->in_seq_unreliable;
 
     if ( unreliable_delta <= 0 )
         return UNSEQUENCED;
@@ -266,7 +268,7 @@ static void peer_service_schedule(struct rudp_peer *peer)
 
     // just abuse for_each to get head, if it exists
     struct rudp_packet_chain *head;
-    rudp_list_for_each(head, &peer->sendq, chain_item)
+    rudp_list_for_each(struct rudp_packet_chain*, head, &peer->sendq, chain_item)
     {
         struct rudp_packet_header *header = &head->packet->header;
 
@@ -477,7 +479,7 @@ int peer_handle_ack(struct rudp_peer *peer, uint16_t ack)
     peer->out_seq_acked = ack;
 
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item)
+    rudp_list_for_each_safe(struct rudp_packet_chain*, pc, tmp, &peer->sendq, chain_item)
     {
         struct rudp_packet_header *header = &pc->packet->header;
         uint16_t seqno = ntohs(header->reliable);
@@ -506,7 +508,7 @@ int peer_handle_ack(struct rudp_peer *peer, uint16_t ack)
     rudp_log_printf(peer->rudp, RUDP_LOG_DEBUG,
                     "%s left in queue:\n",
                     __FUNCTION__);
-    rudp_list_for_each(pc, &peer->sendq, chain_item) {
+    rudp_list_for_each(struct rudp_packet_chain*, pc, &peer->sendq, chain_item) {
         struct rudp_packet_header *header = &pc->packet->header;
         rudp_log_printf(peer->rudp, RUDP_LOG_DEBUG,
                         "%s   - %04x:%04x\n",
@@ -610,10 +612,8 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer)
 {
     struct rudp_packet_chain *pc = rudp_packet_chain_alloc(
         peer->rudp, sizeof(struct rudp_packet_conn_req));
-    struct rudp_packet_conn_req *conn_req = &pc->packet->conn_req;
 
-    conn_req->header.command = RUDP_CMD_CONN_REQ;
-    conn_req->data = 0;
+    pc->packet->header.command = RUDP_CMD_CONN_REQ;
 
     peer->state = PEER_CONNECTING;
 
@@ -646,7 +646,7 @@ rudp_error_t rudp_peer_send_close_noqueue(struct rudp_peer *peer)
 static void peer_send_queue(struct rudp_peer *peer)
 {
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item)
+    rudp_list_for_each_safe(struct rudp_packet_chain*, pc, tmp, &peer->sendq, chain_item)
     {
         struct rudp_packet_header *header = &pc->packet->header;
 
@@ -654,8 +654,6 @@ static void peer_send_queue(struct rudp_peer *peer)
             header->opt |= RUDP_OPT_ACK;
             header->reliable_ack = htons(peer->in_seq_reliable);
 //            peer->must_ack = 0;
-        } else {
-            header->reliable_ack = 0;
         }
 
         rudp_log_printf(peer->rudp, RUDP_LOG_IO,

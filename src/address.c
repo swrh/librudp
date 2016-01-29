@@ -9,6 +9,7 @@
   See AUTHORS for details
  */
 
+#ifndef _MSC_VER
 
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -16,10 +17,54 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#else
+
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <basetsd.h>
+#include <stdio.h>
+
+#if _MSC_VER < 1900
+
+#define snprintf c99_snprintf
+#define vsnprintf c99_vsnprintf
+
+static int c99_vsnprintf(char* out, size_t size, const char* format, va_list ap)
+{
+    int count = -1;
+
+    if (size != 0) {
+        count = _vsnprintf_s(out, size, _TRUNCATE, format, ap);
+    }
+    if (count == -1) {
+        count = _vscprintf(format, ap);
+    }
+
+    return count;
+}
+
+static int c99_snprintf(char* out, size_t size, const char* format, ...)
+{
+    int count;
+    va_list ap;
+
+    va_start(ap, format);
+    count = c99_vsnprintf(out, size, format, ap);
+    va_end(ap);
+
+    return count;
+}
+
+#endif
+
+#endif
+
+
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include <rudp/error.h>
 #include <rudp/address.h>
@@ -283,25 +328,32 @@ int rudp_address_compare(const struct rudp_address *rua,
 
 const char *rudp_address_text(struct rudp_address *rua)
 {
+    struct sockaddr_storage *addr;
+    struct sockaddr_in *addr4;
+    struct sockaddr_in6 *addr6;
+    socklen_t size;
+    rudp_error_t err;
+    void *sin = NULL;
+    char *end =  NULL;
+
     if ( rua->text[0] )
         return rua->text;
 
-    const struct sockaddr_storage *addr;
-    socklen_t size;
-    rudp_error_t err = rudp_address_get(rua, &addr, &size);
+    
+    err = rudp_address_get(rua, &addr, &size);
     if ( err )
         return "<unresolved>";
 
-    const struct sockaddr_in *addr4 = (const struct sockaddr_in *)addr;
-    const struct sockaddr_in6 *addr6 = (const struct sockaddr_in6 *)addr;
-    const void *sin = addr4->sin_family == AF_INET
+    addr4 = (const struct sockaddr_in *)addr;
+    addr6 = (const struct sockaddr_in6 *)addr;
+    sin = addr4->sin_family == AF_INET
         ? (void*)&addr4->sin_addr
         : (void*)&addr6->sin6_addr;
 
     if ( inet_ntop(addr4->sin_family, sin, rua->text, size) == NULL )
         return "<unresolved>";
 
-    char *end = rua->text + strlen(rua->text);
+    *end = rua->text + strlen(rua->text);
     snprintf(end, 7, ":%d", (int)rua->port);
 
     return rua->text;

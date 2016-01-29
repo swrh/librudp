@@ -17,6 +17,16 @@
 
 #include <stdlib.h>
 
+#ifdef _MSC_VER
+
+static int rand_r(unsigned int seed)
+{
+    srand(seed);
+    return rand();
+}
+
+#endif
+
 rudp_error_t rudp_init(
     struct rudp *rudp,
     struct ela_el *el,
@@ -60,7 +70,7 @@ const struct rudp_handler rudp_handler_default =
 void rudp_deinit(struct rudp *rudp)
 {
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &rudp->free_packet_list, chain_item) {
+    rudp_list_for_each_safe(struct rudp_packet_chain*, pc, tmp, &rudp->free_packet_list, chain_item) {
         rudp_list_remove(&pc->chain_item);
         rudp_free(rudp, pc);
     }

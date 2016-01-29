@@ -12,7 +12,9 @@
 #ifndef RUDP_ERROR_IMPL_H
 #define RUDP_ERROR_IMPL_H
 
-static inline
+#include <rudp/compat.h>
+
+static INLINE
 rudp_error_t rudp_error_from_ela(ela_error_t e)
 {
     return e;

@@ -11,12 +11,22 @@
 
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <rudp/error.h>
 #include <rudp/endpoint.h>
 #include <rudp/packet.h>
 #include "rudp_packet.h"
 #include "rudp_error.h"
+
+#ifndef _MSC_VER
+
+#include <unistd.h>
+
+#else
+
+static int(__stdcall *close)(SOCKET s) = closesocket;
+
+#endif
 
 static void _endpoint_handle_incoming(struct ela_event_source *src,
                                       int fd, uint32_t mask, void *data);

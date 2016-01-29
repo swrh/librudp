@@ -25,9 +25,25 @@
    @ref rudp_timestamp and @ref rudp_timestamp_to_timeval.
 */
 
-#include <stdint.h>
-#include <sys/time.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+#ifndef _MSC_VER
+
+#include <sys/time.h>
+
+#else
+
+#include <WinSock2.h>
+#include "datetime.h"
+
+#endif
+
+#if __STDC_VERSION__ >= 199901L
+#define INLINE inline
+# else
+#define INLINE
+#endif 
 
 /**
    @this is an abstract time type definition.  It contains miliseconds
@@ -42,7 +58,7 @@ typedef int64_t rudp_time_t;
 
    @returns a timestamp
  */
-static inline
+static INLINE
 rudp_time_t rudp_timestamp(void)
 {
     struct timeval tv;
@@ -56,7 +72,7 @@ rudp_time_t rudp_timestamp(void)
    @param tv (out) Timeval structure
    @param ts Timestamp
  */
-static inline
+static INLINE
 void rudp_timestamp_to_timeval(struct timeval *tv, rudp_time_t ts)
 {
     tv->tv_sec = ts / 1000;
