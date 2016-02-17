@@ -24,6 +24,10 @@
 #include <basetsd.h>
 #include <stdio.h>
 
+#if _MSC_VER >= 1500
+#define strdup _strdup
+#endif
+
 #if _MSC_VER < 1900
 
 #define snprintf c99_snprintf
