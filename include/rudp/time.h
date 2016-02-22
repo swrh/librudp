@@ -34,8 +34,7 @@
 
 #else
 
-#include <WinSock2.h>
-#include "datetime.h"
+#include <winsock2.h>
 
 #endif
 
@@ -61,9 +60,26 @@ typedef int64_t rudp_time_t;
 static INLINE
 rudp_time_t rudp_timestamp(void)
 {
+#ifdef _MSC_VER
+    /* Note: some broken versions only have 8 trailing zero's, the correct
+     * epoch has 9 trailing zero's. */
+    static const uint64_t epoch = ((uint64_t)116444736000000000ULL);
+
+    SYSTEMTIME system_time;
+    FILETIME file_time;
+    uint64_t time;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &file_time);
+    time = ((uint64_t)file_time.dwLowDateTime);
+    time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+    return (int64_t)((time - epoch) / 10000L) + system_time.wMilliseconds;
+#else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+#endif
 }
 
 /**
