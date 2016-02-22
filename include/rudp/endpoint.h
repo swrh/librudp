@@ -28,7 +28,7 @@
 */
 
 #include <rudp/address.h>
-#include <ela/ela.h>
+#include <rudp/ela_ela.h>
 #include <rudp/compiler.h>
 
 struct rudp_peer;
