@@ -46,7 +46,7 @@ struct rudp_packet_chain *rudp_packet_chain_alloc(
 
     if ( alloc == DEFAULT_ALLOC_SIZE ) {
         // We'll pass this is the list is empty as well
-        rudp_list_for_each(pc, &rudp->free_packet_list, chain_item) {
+        rudp_list_for_each(struct rudp_packet_chain*, pc, &rudp->free_packet_list, chain_item) {
             rudp_list_remove(&pc->chain_item);
             rudp->free_packets--;
             goto found;
@@ -78,7 +78,7 @@ void rudp_packet_chain_free(struct rudp *rudp, struct rudp_packet_chain *pc)
     }
 
     while ( rudp->free_packets > FREE_PACKET_POOL ) {
-        rudp_list_for_each(pc, &rudp->free_packet_list, chain_item) {
+        rudp_list_for_each(struct rudp_packet_chain*, pc, &rudp->free_packet_list, chain_item) {
             rudp_list_remove(&pc->chain_item);
             rudp->free_packets--;
             rudp->allocated_packets--;

@@ -78,7 +78,7 @@ void rudp_server_client_close(struct rudp_server *server,
 rudp_error_t rudp_server_close(struct rudp_server *server)
 {
     struct server_peer *peer, *tmp;
-    rudp_list_for_each_safe(peer, tmp, &server->peer_list, server_item)
+    rudp_list_for_each_safe(struct server_peer*, peer, tmp, &server->peer_list, server_item)
     {
         peer->server->handler->peer_dropped(peer->server, &peer->base);
         rudp_server_client_close(server, &peer->base);
@@ -100,7 +100,7 @@ struct server_peer *rudp_server_peer_lookup(struct rudp_server *server,
                                           const struct sockaddr_storage *addr)
 {
     struct server_peer *peer;
-    rudp_list_for_each(peer, &server->peer_list, server_item)
+    rudp_list_for_each(struct server_peer*, peer, &server->peer_list, server_item)
     {
         if ( ! rudp_peer_address_compare(&peer->base, addr) )
             return peer;
@@ -188,7 +188,7 @@ void server_handle_endpoint_packet(struct rudp_endpoint *endpoint,
                                            const struct sockaddr_storage *addr,
                                            struct rudp_packet_chain *pc)
 {
-    struct rudp_server *server = __container_of(endpoint, server, endpoint);
+    struct rudp_server *server = __container_of(struct rudp_server*, endpoint, server, endpoint);
     struct server_peer *peer = rudp_server_peer_lookup(server, addr);
     rudp_error_t err;
 
@@ -260,7 +260,7 @@ rudp_error_t rudp_server_send_all(
         return EINVAL;
 
     struct server_peer *peer, *tmp;
-    rudp_list_for_each_safe(peer, tmp, &server->peer_list, server_item)
+    rudp_list_for_each_safe(struct server_peer*, peer, tmp, &server->peer_list, server_item)
     {
         rudp_server_send(server, &peer->base, reliable, command, data, size);
     }

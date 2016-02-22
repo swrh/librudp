@@ -14,36 +14,36 @@
 
 #include <rudp/list.h>
 
-#define __container_of(ptr, sample, member)                 \
-    ((typeof(sample))((uintptr_t)(ptr)  -                   \
-         (uintptr_t)(&((typeof(sample))NULL)->member)))
+#define __container_of(type, ptr, sample, member)                 \
+    ((type)((uintptr_t)(ptr)-\
+    (uintptr_t)(&((type)NULL)->member)))
 
-#define rudp_list_for_each(pos, head, member)               \
-    for (pos = 0, pos = __container_of((head)->next, pos, member);  \
+#define rudp_list_for_each(type, pos, head, member)               \
+    for (pos = 0, pos = __container_of(type, (head)->next, pos, member);  \
          &pos->member != (head);                    \
-         pos = __container_of(pos->member.next, pos, member))
+         pos = __container_of(type, pos->member.next, pos, member))
 
-#define rudp_list_for_each_safe(pos, tmp, head, member)             \
+#define rudp_list_for_each_safe(type, pos, tmp, head, member)             \
     for (pos = 0, tmp = 0,                          \
-         pos = __container_of((head)->next, pos, member),       \
-         tmp = __container_of((pos)->member.next, tmp, member);     \
+         pos = __container_of(type, (head)->next, pos, member),       \
+         tmp = __container_of(type, (pos)->member.next, tmp, member);     \
          &pos->member != (head);                    \
          pos = tmp,                             \
-         tmp = __container_of(pos->member.next, tmp, member))
+         tmp = __container_of(type, pos->member.next, tmp, member))
 
-#define rudp_list_for_each_reverse(pos, head, member)           \
-    for (pos = 0, pos = __container_of((head)->prev, pos, member);  \
+#define rudp_list_for_each_reverse(type, pos, head, member)           \
+    for (pos = 0, pos = __container_of(type, (head)->prev, pos, member);  \
          &pos->member != (head);                    \
-         pos = __container_of(pos->member.prev, pos, member))
+         pos = __container_of(type, pos->member.prev, pos, member))
 
-static inline void
+static INLINE void
 rudp_list_init(struct rudp_list *list)
 {
     list->prev = list;
     list->next = list;
 }
 
-static inline void
+static INLINE void
 rudp_list_insert(struct rudp_list *list, struct rudp_list *elm)
 {
     elm->prev = list;
@@ -52,7 +52,7 @@ rudp_list_insert(struct rudp_list *list, struct rudp_list *elm)
     elm->next->prev = elm;
 }
 
-static inline void
+static INLINE void
 rudp_list_append(struct rudp_list *list, struct rudp_list *elm)
 {
     elm->next = list;
@@ -61,14 +61,14 @@ rudp_list_append(struct rudp_list *list, struct rudp_list *elm)
     elm->prev->next = elm;
 }
 
-static inline void
+static INLINE void
 rudp_list_remove(struct rudp_list *elm)
 {
     elm->prev->next = elm->next;
     elm->next->prev = elm->prev;
 }
 
-static inline int
+static INLINE int
 rudp_list_length(struct rudp_list *list)
 {
     struct rudp_list *e;
@@ -84,7 +84,7 @@ rudp_list_length(struct rudp_list *list)
     return count;
 }
 
-static inline int
+static INLINE int
 rudp_list_empty(struct rudp_list *elm)
 {
     return elm->next == elm;

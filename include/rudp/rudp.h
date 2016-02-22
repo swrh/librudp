@@ -66,6 +66,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include <rudp/compat.h>
+
 #include <rudp/list.h>
 #include <rudp/error.h>
 #include <rudp/compiler.h>
