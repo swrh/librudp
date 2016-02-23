@@ -41,7 +41,7 @@ void *rudp_alloc(struct rudp *rudp, size_t len)
 static __inline
 void rudp_free(struct rudp *rudp, void *buffer)
 {
-    return rudp->handler->mem_free(rudp, buffer);
+    rudp->handler->mem_free(rudp, buffer);
 }
 
 #endif

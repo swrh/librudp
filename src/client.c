@@ -190,7 +190,7 @@ void rudp_client_set_ipv4(
     const struct in_addr *address,
     const uint16_t port)
 {
-    return rudp_address_set_ipv4(&client->address, address, port);
+    rudp_address_set_ipv4(&client->address, address, port);
 }
 
 void rudp_client_set_ipv6(
