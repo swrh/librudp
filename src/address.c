@@ -374,7 +374,7 @@ const char *rudp_address_text(struct rudp_address *rua)
     if ( inet_ntop(addr4->sin_family, sin, rua->text, size) == NULL )
         return "<unresolved>";
 
-    *end = rua->text + strlen(rua->text);
+    end = rua->text + strlen(rua->text);
     snprintf(end, 7, ":%d", (int)rua->port);
 
     return rua->text;
