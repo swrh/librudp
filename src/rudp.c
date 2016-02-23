@@ -19,9 +19,8 @@
 
 #ifdef _MSC_VER
 
-static int rand_r(unsigned int seed)
+static int rand_r(unsigned int *seed)
 {
-    srand(seed);
     return rand();
 }
 
