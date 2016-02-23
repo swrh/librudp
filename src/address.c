@@ -164,6 +164,19 @@ void rudp_address_init(struct rudp_address *rua, struct rudp *rudp)
     memset(rua->addr, 0, sizeof(struct sockaddr_storage));
 }
 
+static char *
+inet_ntop_strdup(int af, const void *src)
+{
+    char buf[256];
+    const char *p;
+
+    p = inet_ntop(af, src, buf, sizeof(buf));
+    if (p == NULL)
+        return NULL;
+
+    return strdup(p);
+}
+
 void rudp_address_set_ipv4(
     struct rudp_address *rua,
     const struct in_addr *in_addr,
@@ -176,6 +189,7 @@ void rudp_address_set_ipv4(
     rua->resolver_state = RUDP_RESOLV_ADDR;
 
     rua->port = port;
+    rua->hostname = inet_ntop_strdup(AF_INET, &addr->sin_addr);
     addr->sin_family = AF_INET;
     addr->sin_port = htons(port);
     memcpy(&addr->sin_addr, in_addr, sizeof(struct in_addr));
@@ -196,6 +210,7 @@ void rudp_address_set_ipv6(
     rua->resolver_state = RUDP_RESOLV_ADDR;
 
     rua->port = port;
+    rua->hostname = inet_ntop_strdup(AF_INET6, &addr->sin6_addr);
     addr->sin6_family = AF_INET6;
     addr->sin6_port = htons(port);
     memcpy(&addr->sin6_addr, in6_addr, sizeof(struct in6_addr));
@@ -213,9 +228,11 @@ rudp_error_t rudp_address_set(
     {
     case AF_INET:
         rua->port = ntohs(((struct sockaddr_in *)sockaddr)->sin_port);
+        rua->hostname = inet_ntop_strdup(AF_INET, &((struct sockaddr_in *)sockaddr)->sin_addr);
         break;
     case AF_INET6:
         rua->port = ntohs(((struct sockaddr_in6 *)sockaddr)->sin6_port);
+        rua->hostname = inet_ntop_strdup(AF_INET6, &((struct sockaddr_in6 *)sockaddr)->sin6_addr);
         break;
     default:
         return EAFNOSUPPORT;

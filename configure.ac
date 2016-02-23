@@ -37,7 +37,7 @@ AC_TYPE_UINT32_T
 AM_PROG_LIBTOOL
 
 # Checks for libraries.
-PKG_CHECK_MODULES(ELA, ela)
+PKG_CHECK_MODULES(LIBEVENT, libevent)
 
 # Checks for library functions.
 AC_FUNC_MALLOC
