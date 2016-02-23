@@ -349,18 +349,17 @@ int rudp_address_compare(const struct rudp_address *rua,
 
 const char *rudp_address_text(struct rudp_address *rua)
 {
-    struct sockaddr_storage *addr;
-    struct sockaddr_in *addr4;
-    struct sockaddr_in6 *addr6;
+    const struct sockaddr_storage *addr;
+    const struct sockaddr_in *addr4;
+    const struct sockaddr_in6 *addr6;
     socklen_t size;
     rudp_error_t err;
-    void *sin = NULL;
-    char *end =  NULL;
+    const void *sin;
+    char *end;
 
     if ( rua->text[0] )
         return rua->text;
 
-    
     err = rudp_address_get(rua, &addr, &size);
     if ( err )
         return "<unresolved>";
