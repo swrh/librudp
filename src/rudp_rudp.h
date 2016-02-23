@@ -14,13 +14,14 @@
 
 #include <rudp/rudp.h>
 
-static INLINE
+static inline
 void rudp_log_printf(
     struct rudp *rudp,
     const enum rudp_log_level level,
     const char *fmt, ...)
 {
     va_list arg;
+
     if ( rudp->handler->log == NULL )
         return;
 
@@ -31,13 +32,13 @@ void rudp_log_printf(
     va_end(arg);
 }
 
-static INLINE
+static inline
 void *rudp_alloc(struct rudp *rudp, size_t len)
 {
     return rudp->handler->mem_alloc(rudp, len);
 }
 
-static INLINE
+static inline
 void rudp_free(struct rudp *rudp, void *buffer)
 {
     return rudp->handler->mem_free(rudp, buffer);
