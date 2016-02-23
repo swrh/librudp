@@ -14,7 +14,7 @@
 
 #include <rudp/rudp.h>
 
-static inline
+static __inline
 void rudp_log_printf(
     struct rudp *rudp,
     const enum rudp_log_level level,
@@ -32,13 +32,13 @@ void rudp_log_printf(
     va_end(arg);
 }
 
-static inline
+static __inline
 void *rudp_alloc(struct rudp *rudp, size_t len)
 {
     return rudp->handler->mem_alloc(rudp, len);
 }
 
-static inline
+static __inline
 void rudp_free(struct rudp *rudp, void *buffer)
 {
     return rudp->handler->mem_free(rudp, buffer);

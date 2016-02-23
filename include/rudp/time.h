@@ -47,7 +47,7 @@ typedef int64_t rudp_time_t;
 
    @returns a timestamp
  */
-static inline
+static __inline
 rudp_time_t rudp_timestamp(void)
 {
 #ifdef _MSC_VER
@@ -78,7 +78,7 @@ rudp_time_t rudp_timestamp(void)
    @param tv (out) Timeval structure
    @param ts Timestamp
  */
-static inline
+static __inline
 void rudp_timestamp_to_timeval(struct timeval *tv, rudp_time_t ts)
 {
     tv->tv_sec = ts / 1000;
