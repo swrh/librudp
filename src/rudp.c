@@ -46,7 +46,7 @@ void *_rudp_default_alloc(struct rudp *rudp, size_t len)
 static
 void _rudp_default_free(struct rudp *rudp, void *buffer)
 {
-    return free(buffer);
+    free(buffer);
 }
 
 RUDP_EXPORT

@@ -750,7 +750,7 @@ static void peer_service(struct rudp_peer *peer)
 static void _peer_service(struct ela_event_source *src,
                           int fd, uint32_t mask, void *data)
 {
-    return peer_service((struct rudp_peer *)data);
+    peer_service((struct rudp_peer *)data);
 }
 
 int rudp_peer_address_compare(const struct rudp_peer *peer,

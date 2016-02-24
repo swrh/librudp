@@ -69,17 +69,17 @@ ela_error_t ela_remove(struct ela_el *ctx,
 
 void ela_run(struct ela_el *ctx)
 {
-    return ctx->backend->run(ctx);
+    ctx->backend->run(ctx);
 }
 
 void ela_exit(struct ela_el *ctx)
 {
-    return ctx->backend->exit(ctx);
+    ctx->backend->exit(ctx);
 }
 
 void ela_close(struct ela_el *ctx)
 {
-    return ctx->backend->close(ctx);
+    ctx->backend->close(ctx);
 }
 
 ela_error_t ela_source_alloc(
@@ -99,7 +99,7 @@ void ela_source_free(
     struct ela_el *ctx,
     struct ela_event_source *src)
 {
-    return ctx->backend->source_free(ctx, src);
+    ctx->backend->source_free(ctx, src);
 }
 
 #define REGISTRY_SIZE 8

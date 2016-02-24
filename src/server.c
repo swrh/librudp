@@ -316,7 +316,7 @@ void rudp_server_set_ipv4(
     const struct in_addr *address,
     const uint16_t port)
 {
-    return rudp_endpoint_set_ipv4(&server->endpoint, address, port);
+    rudp_endpoint_set_ipv4(&server->endpoint, address, port);
 }
 
 void rudp_server_set_ipv6(

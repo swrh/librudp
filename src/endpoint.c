@@ -188,7 +188,7 @@ void rudp_endpoint_set_ipv4(
     const struct in_addr *address,
     const uint16_t port)
 {
-    return rudp_address_set_ipv4(&endpoint->addr, address, port);
+    rudp_address_set_ipv4(&endpoint->addr, address, port);
 }
 
 void rudp_endpoint_set_ipv6(
