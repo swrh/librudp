@@ -134,7 +134,7 @@ inet_ntop_strdup(int af, const void *src)
     char buf[256];
     const char *p;
 
-    p = inet_ntop(af, src, buf, sizeof(buf));
+    p = evutil_inet_ntop(af, src, buf, sizeof(buf));
     if (p == NULL)
         return NULL;
 
@@ -338,7 +338,7 @@ const char *rudp_address_text(struct rudp_address *rua)
         ? (void*)&addr4->sin_addr
         : (void*)&addr6->sin6_addr;
 
-    if ( inet_ntop(addr4->sin_family, sin, rua->text, size) == NULL )
+    if (evutil_inet_ntop(addr4->sin_family, sin, rua->text, size) == NULL)
         return "<unresolved>";
 
     char *end = rua->text + strlen(rua->text);
