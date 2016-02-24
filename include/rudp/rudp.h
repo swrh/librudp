@@ -65,6 +65,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <rudp/list.h>
 #include <rudp/error.h>
@@ -182,5 +183,15 @@ void rudp_deinit(struct rudp *rudp);
  */
 RUDP_EXPORT
 uint16_t rudp_random(void);
+
+static __inline char *
+rudp_strdup(const char *s)
+{
+#ifdef _MSC_VER
+    return _strdup(s);
+#else
+    return strdup(s);
+#endif
+}
 
 #endif

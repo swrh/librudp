@@ -54,7 +54,7 @@ rudp_error_t rudp_address_set_hostname(
 
     rua->port = port;
 
-    rua->hostname = strdup(hostname);
+    rua->hostname = rudp_strdup(hostname);
     if ( rua->hostname == NULL )
         return ENOMEM;
 
@@ -138,7 +138,7 @@ inet_ntop_strdup(int af, const void *src)
     if (p == NULL)
         return NULL;
 
-    return strdup(p);
+    return rudp_strdup(p);
 }
 
 void rudp_address_set_ipv4(
