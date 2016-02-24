@@ -23,8 +23,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <event2/util.h>
+
 #include <rudp/error.h>
 #include <rudp/address.h>
+
 #include "rudp_rudp.h"
 
 enum resolver_state {
@@ -339,7 +342,7 @@ const char *rudp_address_text(struct rudp_address *rua)
         return "<unresolved>";
 
     char *end = rua->text + strlen(rua->text);
-    snprintf(end, 7, ":%d", (int)rua->port);
+    evutil_snprintf(end, 7, ":%d", (int)rua->port);
 
     return rua->text;
 }
