@@ -11,7 +11,9 @@
 
 #define _BSD_SOURCE
 
-#include <sys/time.h>
+#ifndef _MSC_VER
+# include <sys/time.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>

@@ -42,12 +42,17 @@
    corresponding to an hostname.
  */
 
-#include <rudp/error.h>
-#include <rudp/compiler.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#ifndef _MSC_VER
+# include <sys/socket.h>
+# include <netinet/in.h>
+#else
+# include <ws2tcpip.h>
+#endif
 
 #include <inttypes.h>
+
+#include <rudp/error.h>
+#include <rudp/compiler.h>
 
 #define RUDP_NO_IPV4   2
 #define RUDP_NO_IPV6   1

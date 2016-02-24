@@ -11,10 +11,14 @@
 
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
+#ifndef _MSC_VER
+# include <unistd.h>
+#endif
+
 #include <rudp/error.h>
 #include <rudp/endpoint.h>
 #include <rudp/packet.h>
+
 #include "rudp_packet.h"
 #include "rudp_error.h"
 

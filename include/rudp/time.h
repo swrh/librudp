@@ -26,7 +26,9 @@
 */
 
 #include <stdint.h>
-#include <sys/time.h>
+#ifndef _MSC_VER
+# include <sys/time.h>
+#endif
 #include <stdlib.h>
 
 /**
