@@ -60,7 +60,7 @@ const struct rudp_handler rudp_handler_default =
 void rudp_deinit(struct rudp *rudp)
 {
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &rudp->free_packet_list, chain_item) {
+    rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &rudp->free_packet_list, chain_item) {
         rudp_list_remove(&pc->chain_item);
         rudp_free(rudp, pc);
     }

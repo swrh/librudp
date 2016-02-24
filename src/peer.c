@@ -60,7 +60,7 @@ rudp_peer_reset(struct rudp_peer *peer)
     if (peer == NULL)
         return;
 
-    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item) {
+    rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &peer->sendq, chain_item) {
         rudp_list_remove(&pc->chain_item);
         rudp_packet_chain_free(peer->rudp, pc);
     }
@@ -280,7 +280,7 @@ static void peer_service_schedule(struct rudp_peer *peer)
 
     // just abuse for_each to get head, if it exists
     struct rudp_packet_chain *head;
-    rudp_list_for_each(head, &peer->sendq, chain_item)
+    rudp_list_for_each(struct rudp_packet_chain *, head, &peer->sendq, chain_item)
     {
         struct rudp_packet_header *header = &head->packet->header;
 
@@ -495,7 +495,7 @@ int peer_handle_ack(struct rudp_peer *peer, uint16_t ack)
     peer->out_seq_acked = ack;
 
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item)
+    rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &peer->sendq, chain_item)
     {
         struct rudp_packet_header *header = &pc->packet->header;
         uint16_t seqno = ntohs(header->reliable);
@@ -524,7 +524,7 @@ int peer_handle_ack(struct rudp_peer *peer, uint16_t ack)
     rudp_log_printf(peer->rudp, RUDP_LOG_DEBUG,
                     "%s left in queue:\n",
                     __FUNCTION__);
-    rudp_list_for_each(pc, &peer->sendq, chain_item) {
+    rudp_list_for_each(struct rudp_packet_chain *, pc, &peer->sendq, chain_item) {
         struct rudp_packet_header *header = &pc->packet->header;
         rudp_log_printf(peer->rudp, RUDP_LOG_DEBUG,
                         "%s   - %04x:%04x\n",
@@ -671,7 +671,7 @@ rudp_peer_send_close_noqueue(struct rudp_peer *peer)
 static void peer_send_queue(struct rudp_peer *peer)
 {
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item)
+    rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &peer->sendq, chain_item)
     {
         struct rudp_packet_header *header = &pc->packet->header;
 

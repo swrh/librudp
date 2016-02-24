@@ -83,7 +83,7 @@ void client_handle_data_packet(
     struct rudp_peer *peer,
     struct rudp_packet_chain *pc)
 {
-    struct rudp_client *client = __container_of(peer, client, peer);
+    struct rudp_client *client = __container_of(peer, struct rudp_client *, peer);
     struct rudp_packet_data *header = &pc->packet->data;
 
     client->handler->handle_packet(
@@ -94,7 +94,7 @@ void client_handle_data_packet(
 static
 void client_link_info(struct rudp_peer *peer, struct rudp_link_info *info)
 {
-    struct rudp_client *client = __container_of(peer, client, peer);
+    struct rudp_client *client = __container_of(peer, struct rudp_client *, peer);
 
     client->handler->link_info(client, info);
 }
@@ -102,7 +102,7 @@ void client_link_info(struct rudp_peer *peer, struct rudp_link_info *info)
 static
 void client_peer_dropped(struct rudp_peer *peer)
 {
-    struct rudp_client *client = __container_of(peer, client, peer);
+    struct rudp_client *client = __container_of(peer, struct rudp_client *, peer);
 
     client->connected = 0;
 
@@ -130,7 +130,7 @@ void client_handle_endpoint_packet(struct rudp_endpoint *endpoint,
                                    const struct sockaddr_storage *addr,
                                    struct rudp_packet_chain *pc)
 {
-    struct rudp_client *client = __container_of(endpoint, client, endpoint);
+    struct rudp_client *client = __container_of(endpoint, struct rudp_client *, endpoint);
 
     rudp_log_printf(client->rudp, RUDP_LOG_INFO,
                     "Endpoint handling packet\n");

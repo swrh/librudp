@@ -14,27 +14,26 @@
 
 #include <rudp/list.h>
 
-#define __container_of(ptr, sample, member)                 \
-    ((typeof(sample))((uintptr_t)(ptr)  -                   \
-         (uintptr_t)(&((typeof(sample))NULL)->member)))
+#define __container_of(ptr, type, member) \
+    ((type)((uintptr_t)(ptr) - (uintptr_t)(&((type)NULL)->member)))
 
-#define rudp_list_for_each(pos, head, member)               \
-    for (pos = 0, pos = __container_of((head)->next, pos, member);  \
+#define rudp_list_for_each(type, pos, head, member)               \
+    for (pos = 0, pos = __container_of((head)->next, type, member);  \
          &pos->member != (head);                    \
-         pos = __container_of(pos->member.next, pos, member))
+         pos = __container_of(pos->member.next, type, member))
 
-#define rudp_list_for_each_safe(pos, tmp, head, member)             \
+#define rudp_list_for_each_safe(type, pos, tmp, head, member)             \
     for (pos = 0, tmp = 0,                          \
-         pos = __container_of((head)->next, pos, member),       \
-         tmp = __container_of((pos)->member.next, tmp, member);     \
+         pos = __container_of((head)->next, type, member),       \
+         tmp = __container_of((pos)->member.next, type, member);     \
          &pos->member != (head);                    \
          pos = tmp,                             \
-         tmp = __container_of(pos->member.next, tmp, member))
+         tmp = __container_of(pos->member.next, type, member))
 
-#define rudp_list_for_each_reverse(pos, head, member)           \
-    for (pos = 0, pos = __container_of((head)->prev, pos, member);  \
+#define rudp_list_for_each_reverse(type, pos, head, member)           \
+    for (pos = 0, pos = __container_of((head)->prev, type, member);  \
          &pos->member != (head);                    \
-         pos = __container_of(pos->member.prev, pos, member))
+         pos = __container_of(pos->member.prev, type, member))
 
 static __inline void
 rudp_list_init(struct rudp_list *list)
@@ -91,6 +90,6 @@ rudp_list_empty(struct rudp_list *elm)
 }
 
 #define rudp_list_head(head, type, member)      \
-    (type*)__container_of((head)->next, (type*)0, member);
+    (type*)__container_of((head)->next, type *, member);
 
 #endif
