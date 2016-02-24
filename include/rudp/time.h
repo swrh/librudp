@@ -13,6 +13,8 @@
 /** @hidden */
 #define RUDP_TIME_H_
 
+#include <event2/util.h>
+
 /**
    @file
    @module{Time}
@@ -48,7 +50,7 @@ static __inline
 rudp_time_t rudp_timestamp(void)
 {
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    evutil_gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
@@ -61,7 +63,11 @@ rudp_time_t rudp_timestamp(void)
 static __inline
 void rudp_timestamp_to_timeval(struct timeval *tv, rudp_time_t ts)
 {
+#ifdef _MSC_VER
+    tv->tv_sec = (long)(ts / 1000);
+#else
     tv->tv_sec = ts / 1000;
+#endif
     tv->tv_usec = (ts % 1000) * 1000;
 }
 
