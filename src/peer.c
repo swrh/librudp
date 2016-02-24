@@ -72,7 +72,7 @@ rudp_peer_reset(struct rudp_peer *peer)
     peer->abs_timeout_deadline = rudp_timestamp() + DROP_TIMEOUT;
     peer->in_seq_reliable = (uint16_t)-1;
     peer->in_seq_unreliable = 0;
-    peer->out_seq_reliable = rudp_random(peer->rudp);
+    peer->out_seq_reliable = rudp_random();
     peer->out_seq_unreliable = 0;
     peer->out_seq_acked = peer->out_seq_reliable - 1;
     peer->state = PEER_NEW;

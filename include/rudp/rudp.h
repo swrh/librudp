@@ -147,7 +147,6 @@ struct rudp
     const struct rudp_handler *handler;
     struct ela_el *el;
     struct rudp_list free_packet_list;
-    unsigned int seed;
     uint16_t allocated_packets;
     uint16_t free_packets;
 };
@@ -182,6 +181,6 @@ void rudp_deinit(struct rudp *rudp);
    @param rudp Rudp context to deinitialize
  */
 RUDP_EXPORT
-uint16_t rudp_random(struct rudp *rudp);
+uint16_t rudp_random(void);
 
 #endif

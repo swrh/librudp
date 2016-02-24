@@ -9,13 +9,16 @@
   See AUTHORS for details
  */
 
+#include <stdlib.h>
+
+#include <event2/util.h>
+
 #include <rudp/rudp.h>
 #include <rudp/packet.h>
 #include <rudp/time.h>
+
 #include "rudp_list.h"
 #include "rudp_rudp.h"
-
-#include <stdlib.h>
 
 rudp_error_t rudp_init(
     struct rudp *rudp,
@@ -28,11 +31,6 @@ rudp_error_t rudp_init(
     rudp_list_init(&rudp->free_packet_list);
     rudp->free_packets = 0;
     rudp->allocated_packets = 0;
-
-    rudp->seed = rudp_timestamp();
-    rudp_random(rudp);
-    rudp_random(rudp);
-    rudp_random(rudp);
 
     return 0;
 }
@@ -66,7 +64,11 @@ void rudp_deinit(struct rudp *rudp)
     }
 }
 
-uint16_t rudp_random(struct rudp *rudp)
+uint16_t rudp_random(void)
 {
-    return rand_r(&rudp->seed);
+    uint16_t r;
+
+    evutil_secure_rng_get_bytes(&r, sizeof(r));
+
+    return r;
 }
