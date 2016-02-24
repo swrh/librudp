@@ -18,6 +18,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <event2/util.h>
+
 #include <rudp/endpoint.h>
 #include <rudp/rudp.h>
 #include <rudp/address.h>
@@ -35,7 +37,7 @@ static int peer_handle_ack(struct rudp_peer *peer, uint16_t ack);
 
 static void peer_service(struct rudp_peer *peer);
 static void _peer_service(struct ela_event_source *src,
-                          int fd, uint32_t mask, void *data);
+                          evutil_socket_t fd, uint32_t mask, void *data);
 static void peer_service_schedule(struct rudp_peer *peer);
 
 #define ACTION_TIMEOUT 5000
@@ -121,7 +123,7 @@ rudp_peer_deinit(struct rudp_peer *peer)
 
 static void peer_update_rtt(struct rudp_peer *peer, rudp_time_t last_rtt)
 {
-    peer->rttvar = (3 * peer->rttvar + labs(peer->srtt - last_rtt)) / 4;
+    peer->rttvar = (3 * peer->rttvar + labs((long)(peer->srtt - last_rtt))) / 4;
     peer->srtt = (7 * peer->srtt + last_rtt) / 8;
     peer->rto = peer->srtt;
     if ( peer->rto > MAX_RTO )
@@ -748,7 +750,7 @@ static void peer_service(struct rudp_peer *peer)
 }
 
 static void _peer_service(struct ela_event_source *src,
-                          int fd, uint32_t mask, void *data)
+                          evutil_socket_t fd, uint32_t mask, void *data)
 {
     peer_service((struct rudp_peer *)data);
 }

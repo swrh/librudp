@@ -21,6 +21,8 @@
 
 #include <stdint.h>
 
+#include <event2/util.h>
+
 #if !defined(_MSC_VER)
 # include <sys/time.h>
 #endif
@@ -49,7 +51,7 @@ struct ela_event_source;
    @param mask Bitmask of events available
    @param data Callback private data
  */
-typedef void ela_handler_func(struct ela_event_source *source, int fd,
+typedef void ela_handler_func(struct ela_event_source *source, evutil_socket_t fd,
                               uint32_t mask, void *data);
 
 /**
@@ -136,7 +138,7 @@ ELA_EXPORT
 ela_error_t ela_set_fd(
     struct ela_el *ctx,
     struct ela_event_source *src,
-    int fd,
+    evutil_socket_t fd,
     uint32_t flags);
 
 /**

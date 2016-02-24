@@ -18,6 +18,8 @@
    @short Libela implementor's API
  */
 
+#include <event2/util.h>
+
 #include <rudp/ela_ela.h>
 
 /** Functions to be implemented by a event loop backend */
@@ -39,7 +41,7 @@ struct ela_el_backend
     ela_error_t (*set_fd)(
         struct ela_el *context,
         struct ela_event_source *src,
-        int fd,
+        evutil_socket_t fd,
         uint32_t flags);
 
     /** Timeout. See @ref ela_set_timeout */

@@ -13,6 +13,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+
+#include <event2/util.h>
+
 #include <rudp/ela_ela.h>
 #include <rudp/ela_backend.h>
 #include <rudp/ela_libevent.h>
@@ -61,7 +64,7 @@ static ela_error_t _real_add(struct ela_event_source *src)
 }
 
 static
-void _ela_event_cb(int fd, short ev_flags, void *priv)
+void _ela_event_cb(evutil_socket_t fd, short ev_flags, void *priv)
 {
     struct ela_event_source *src = priv;
     int ela_flags = 0;
@@ -80,7 +83,7 @@ static
 ela_error_t _ela_event_set_fd(
     struct ela_el *ctx_,
     struct ela_event_source *src,
-    int fd,
+    evutil_socket_t fd,
     uint32_t ela_flags)
 {
     struct libevent_mainloop *ctx = (struct libevent_mainloop *)ctx_;

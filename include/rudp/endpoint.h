@@ -27,6 +27,8 @@
    be cleaned with @ref rudp_endpoint_deinit.
 */
 
+#include <event2/util.h>
+
 #include <rudp/address.h>
 #include <rudp/ela_ela.h>
 #include <rudp/compiler.h>
@@ -78,7 +80,7 @@ struct rudp_endpoint
     struct rudp_address addr;
     struct rudp *rudp;
     struct ela_event_source *ela_source;
-    int socket_fd;
+    evutil_socket_t socket_fd;
 };
 
 /**

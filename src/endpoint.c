@@ -15,6 +15,8 @@
 # include <unistd.h>
 #endif
 
+#include <event2/util.h>
+
 #include <rudp/error.h>
 #include <rudp/endpoint.h>
 #include <rudp/packet.h>
@@ -22,8 +24,14 @@
 #include "rudp_packet.h"
 #include "rudp_error.h"
 
+#ifdef _MSC_VER
+#define RUDP_INVALID_SOCKET INVALID_SOCKET
+#else
+#define RUDP_INVALID_SOCKET -1
+#endif
+
 static void _endpoint_handle_incoming(struct ela_event_source *src,
-                                      int fd, uint32_t mask, void *data);
+                                      evutil_socket_t fd, uint32_t mask, void *data);
 
 void rudp_endpoint_init(
     struct rudp_endpoint *endpoint,
@@ -31,7 +39,7 @@ void rudp_endpoint_init(
     const struct rudp_endpoint_handler *handler)
 {
     rudp_address_init(&endpoint->addr, rudp);
-    endpoint->socket_fd = -1;
+    endpoint->socket_fd = RUDP_INVALID_SOCKET;
     endpoint->rudp = rudp;
     endpoint->handler = handler;
     ela_source_alloc(rudp->el, _endpoint_handle_incoming,
@@ -52,7 +60,7 @@ void rudp_endpoint_deinit(struct rudp_endpoint *endpoint)
  */
 static void
 _endpoint_handle_incoming(struct ela_event_source *src,
-                          int fd, uint32_t mask, void *data)
+                          evutil_socket_t fd, uint32_t mask, void *data)
 {
     struct rudp_endpoint *endpoint = data;
     struct rudp_packet_chain *pc = rudp_packet_chain_alloc(
@@ -73,6 +81,7 @@ rudp_error_t rudp_endpoint_bind(struct rudp_endpoint *endpoint)
     const struct sockaddr_storage *addr;
     socklen_t size;
     rudp_error_t err = rudp_address_get(&endpoint->addr, &addr, &size);
+    evutil_socket_t skt;
 
     switch (err) {
     case 0:
@@ -84,12 +93,13 @@ rudp_error_t rudp_endpoint_bind(struct rudp_endpoint *endpoint)
         return err;
     }
 
-    int ret = socket(addr ? addr->ss_family : AF_INET6, SOCK_DGRAM, 0);
+    skt = socket(addr ? addr->ss_family : AF_INET6, SOCK_DGRAM, 0);
+    if (skt == RUDP_INVALID_SOCKET)
+        return EVUTIL_SOCKET_ERROR();
 
-    if ( ret == -1 )
-        return errno;
+    endpoint->socket_fd = skt;
 
-    endpoint->socket_fd = ret;
+    int ret = 0;
 
     if ( addr )
         ret = bind(endpoint->socket_fd,
@@ -134,8 +144,8 @@ rudp_endpoint_close(struct rudp_endpoint *endpoint)
     if (endpoint->rudp != NULL)
         ela_remove(endpoint->rudp->el, endpoint->ela_source);
 
-    close(endpoint->socket_fd);
-    endpoint->socket_fd = -1;
+    evutil_closesocket(endpoint->socket_fd);
+    endpoint->socket_fd = RUDP_INVALID_SOCKET;
 }
 
 rudp_error_t rudp_endpoint_recv(struct rudp_endpoint *endpoint,
@@ -144,10 +154,13 @@ rudp_error_t rudp_endpoint_recv(struct rudp_endpoint *endpoint,
 {
     int ret;
 
-    size_t available = *len;
+#ifdef _MSC_VER
+    int slen = sizeof(*addr);
+#else
     socklen_t slen = sizeof(*addr);
+#endif
 
-    ret = recvfrom(endpoint->socket_fd, data, available, 0,
+    ret = recvfrom(endpoint->socket_fd, data, (int)*len, 0,
                    (struct sockaddr *)addr, &slen);
 
     if ( ret == -1 )
@@ -173,9 +186,9 @@ rudp_endpoint_send(struct rudp_endpoint *endpoint,
     if (err)
         return err;
 
-    int ret = sendto(endpoint->socket_fd, data, len, 0,
+    int ret = sendto(endpoint->socket_fd, data, (int)len, 0,
                      (const struct sockaddr *)address,
-                     size);
+                     (int)size);
 
     if ( ret == -1 )
         return errno;

@@ -10,10 +10,13 @@
  */
 
 
-#include <rudp/ela_ela.h>
-#include <rudp/ela_backend.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <event2/util.h>
+
+#include <rudp/ela_ela.h>
+#include <rudp/ela_backend.h>
 
 #if 0
 # define DBG(a, ...) printf(a, __VA_ARGS__)
@@ -24,7 +27,7 @@
 ela_error_t ela_set_fd(
     struct ela_el *ctx,
     struct ela_event_source *src,
-    int fd,
+    evutil_socket_t fd,
     uint32_t flags)
 {
     ela_error_t err = ctx->backend->set_fd(ctx, src, fd, flags);
