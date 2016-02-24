@@ -21,6 +21,8 @@
 /* GCC visibility */
 #if defined(__GNUC__) && __GNUC__ >= 4 /** mkdoc:skip */
 #define RUDP_EXPORT __attribute__ ((visibility("default")))
+#elif defined(_MSC_VER)
+#define RUDP_EXPORT __declspec(dllexport)
 #else
 #define RUDP_EXPORT
 #endif

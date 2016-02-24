@@ -125,7 +125,7 @@ struct rudp_handler
     void (*mem_free)(struct rudp *rudp, void *buffer);
 };
 
-extern const struct rudp_handler rudp_handler_default;
+extern RUDP_EXPORT const struct rudp_handler rudp_handler_default;
 
 /**
    Can be used where default allocators and no logging output is
