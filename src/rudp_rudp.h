@@ -20,7 +20,7 @@ void rudp_log_printf(
     const enum rudp_log_level level,
     const char *fmt, ...)
 {
-    if ( rudp->handler->log == NULL )
+    if (rudp == NULL || rudp->handler->log == NULL)
         return;
 
     va_list arg;

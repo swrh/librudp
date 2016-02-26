@@ -58,17 +58,16 @@ rudp_error_t rudp_client_connect(struct rudp_client *client)
     return rudp_endpoint_bind(&client->endpoint);
 }
 
-rudp_error_t rudp_client_close(struct rudp_client *client)
+rudp_error_t
+rudp_client_close(struct rudp_client *client)
 {
-    /* Avoid SEGFAULT in case rudp_client_connect() hasn't been called yet. */
-    if (client->peer.endpoint == NULL)
-        return 0;
+    if (client == NULL)
+        return EINVAL;
 
     rudp_peer_send_close_noqueue(&client->peer);
-
     rudp_peer_deinit(&client->peer);
-
     rudp_endpoint_close(&client->endpoint);
+
     return 0;
 }
 

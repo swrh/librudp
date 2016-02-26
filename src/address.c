@@ -82,25 +82,33 @@ rudp_error_t rudp_address_set_hostname(
     return 0;
 }
 
-void rudp_address_deinit(struct rudp_address *rua)
+void
+rudp_address_deinit(struct rudp_address *rua)
 {
-    switch ( (enum resolver_state)rua->resolver_state )
-    {
+    if (rua == NULL)
+        return;
+
+    switch ((enum resolver_state)rua->resolver_state) {
     case RUDP_RESOLV_NONE:
     case RUDP_RESOLV_ADDR:
     case RUDP_RESOLV_FAILED:
     case RUDP_RESOLV_ERROR:
         break;
     case RUDP_RESOLV_DONE:
-        freeaddrinfo(rua->addrinfo);
+        if (rua->addrinfo)
+            freeaddrinfo(rua->addrinfo);
+        rua->addrinfo = NULL;
     }
-
-    if ( rua->hostname )
-        free(rua->hostname);
-    if ( rua->addr )
-        rudp_free(rua->rudp, rua->addr);
-    rua->hostname = NULL;
     rua->resolver_state = RUDP_RESOLV_NONE;
+
+    if (rua->hostname)
+        free(rua->hostname);
+    rua->hostname = NULL;
+
+    if (rua->rudp && rua->addr)
+        rudp_free(rua->rudp, rua->addr);
+    rua->addr = NULL;
+
     rua->text[0] = 0;
 }
 
@@ -237,16 +245,25 @@ rudp_error_t rudp_address_next(
     return EINVAL;
 }
 
-rudp_error_t rudp_address_get(
+rudp_error_t
+rudp_address_get(
     const struct rudp_address *rua,
     const struct sockaddr_storage **addr,
     socklen_t *addrsize)
 {
-    const struct sockaddr_in *addr4 = (const struct sockaddr_in *)rua->addr;
-    int family = addr4->sin_family;
+    const struct sockaddr_in *addr4;
+    int family;
 
-    switch ( (enum resolver_state)rua->resolver_state )
-    {
+    if (rua == NULL)
+        return EINVAL;
+
+    addr4 = (const struct sockaddr_in *)rua->addr;
+    if (addr4 == NULL)
+        return EINVAL;
+
+    family = addr4->sin_family;
+
+    switch ((enum resolver_state)rua->resolver_state) {
     case RUDP_RESOLV_ADDR:
     case RUDP_RESOLV_DONE:
         *addr = rua->addr;
@@ -261,6 +278,7 @@ rudp_error_t rudp_address_get(
     case RUDP_RESOLV_ERROR:
         return ENXIO;
     }
+
     return EINVAL;
 }
 

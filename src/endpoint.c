@@ -121,9 +121,15 @@ ela_err:
 }
 
 
-void rudp_endpoint_close(struct rudp_endpoint *endpoint)
+void
+rudp_endpoint_close(struct rudp_endpoint *endpoint)
 {
-    ela_remove(endpoint->rudp->el, endpoint->ela_source);
+    if (endpoint == NULL)
+        return;
+
+    if (endpoint->rudp != NULL)
+        ela_remove(endpoint->rudp->el, endpoint->ela_source);
+
     close(endpoint->socket_fd);
     endpoint->socket_fd = -1;
 }
@@ -148,15 +154,19 @@ rudp_error_t rudp_endpoint_recv(struct rudp_endpoint *endpoint,
     return 0;
 }
 
-rudp_error_t rudp_endpoint_send(struct rudp_endpoint *endpoint,
-                                const struct rudp_address *addr,
-                                const void *data, size_t len)
+rudp_error_t
+rudp_endpoint_send(struct rudp_endpoint *endpoint,
+        const struct rudp_address *addr,
+        const void *data, size_t len)
 {
     const struct sockaddr_storage *address;
     socklen_t size;
 
+    if (endpoint == NULL)
+        return EINVAL;
+
     rudp_error_t err = rudp_address_get(addr, &address, &size);
-    if ( err )
+    if (err)
         return err;
 
     int ret = sendto(endpoint->socket_fd, data, len, 0,

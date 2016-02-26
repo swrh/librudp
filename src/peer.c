@@ -50,16 +50,20 @@ enum peer_state
 
 /* Object management */
 
-void rudp_peer_reset(struct rudp_peer *peer)
+void
+rudp_peer_reset(struct rudp_peer *peer)
 {
     struct rudp_packet_chain *pc, *tmp;
-    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item)
-    {
+
+    if (peer == NULL)
+        return;
+
+    rudp_list_for_each_safe(pc, tmp, &peer->sendq, chain_item) {
         rudp_list_remove(&pc->chain_item);
         rudp_packet_chain_free(peer->rudp, pc);
     }
 
-    if ( peer->scheduled )
+    if (peer->scheduled)
         ela_remove(peer->rudp->el, peer->service_source);
     peer->scheduled = 0;
 
@@ -97,8 +101,12 @@ void rudp_peer_init(
     peer_service_schedule(peer);
 }
 
-void rudp_peer_deinit(struct rudp_peer *peer)
+void
+rudp_peer_deinit(struct rudp_peer *peer)
 {
+    if (peer == NULL)
+        return;
+
     rudp_peer_reset(peer);
     rudp_address_deinit(&peer->address);
 
@@ -607,10 +615,13 @@ rudp_error_t peer_send_raw(
     struct rudp_peer *peer,
     const void *data, size_t len)
 {
-    peer->sendto_err = rudp_endpoint_send(
-        peer->endpoint, &peer->address, data, len);
+    if (peer == NULL)
+        return EINVAL;
 
-    peer->last_out_time = rudp_timestamp();
+    peer->sendto_err = rudp_endpoint_send(peer->endpoint, &peer->address, data, len);
+    if (peer->sendto_err != EINVAL)
+        peer->last_out_time = rudp_timestamp();
+
     return peer->sendto_err;
 }
 
@@ -628,12 +639,16 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer)
     return rudp_peer_send_reliable(peer, pc);
 }
 
-rudp_error_t rudp_peer_send_close_noqueue(struct rudp_peer *peer)
+rudp_error_t
+rudp_peer_send_close_noqueue(struct rudp_peer *peer)
 {
     struct rudp_packet_header header = {
         .command = RUDP_CMD_CLOSE,
         .opt = 0,
     };
+
+    if (peer == NULL)
+        return EINVAL;
 
     header.opt = 0;
     header.reliable = htons(peer->out_seq_reliable);
