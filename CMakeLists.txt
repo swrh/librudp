@@ -3,9 +3,8 @@ project(librudp C)
 
 set(RUDP_MAJOR_VERSION 0)
 set(RUDP_MINOR_VERSION 3)
-set(RUDP_PATCH_VERSION 0)
-set(RUDP_VERSION
-  ${RUDP_MAJOR_VERSION}.${RUDP_MINOR_VERSION}.${RUDP_PATCH_VERSION})
+#set(RUDP_PATCH_VERSION 1)
+set(RUDP_VERSION ${RUDP_MAJOR_VERSION}.${RUDP_MINOR_VERSION})
 
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
@@ -20,6 +19,9 @@ endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
   "Installation directory for CMake files")
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
+include(LibFindMacros)
+
 # Make relative paths absolute (needed later on)
 foreach(p LIB BIN INCLUDE CMAKE)
   set(var INSTALL_${p}_DIR)
@@ -33,8 +35,92 @@ include_directories(
   "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
   "${PROJECT_BINARY_DIR}")  # to find foo/config.h
 
-# Add sub-directories
-add_subdirectory(src)
+# Winsock.
+if(WIN32)
+    set(CMAKE_EXTRA_INCLUDE_FILES winsock2.h ws2tcpip.h)
+    set(CMAKE_REQUIRED_LIBRARIES  ws2_32.lib)
+    set(CMAKE_REQUIRED_DEFINITIONS -FIwinsock2.h -FIws2tcpip.h)
+endif()
+
+set (RUDP__HAVE_LIBEVENT 0)
+find_package(PkgConfig)
+if (PKG_CONFIG_FOUND)
+    pkg_check_modules(LIBEVENT libevent>=2.0.4)
+    set(RUDP__HAVE_LIBEVENT ${LIBEVENT_FOUND})
+endif()
+
+if (NOT RUDP__HAVE_LIBEVENT)
+    find_package(Libevent REQUIRED)
+    set (RUDP__HAVE_LIBEVENT LIBEVENT_FOUND)
+endif()
+
+if (NOT RUDP__HAVE_LIBEVENT)
+    message(FATAL_ERROR "package 'libevent' not found")
+endif()
+
+message("libevent include: ${LIBEVENT_INCLUDE_DIRS}")
+message("libevent lib: ${LIBEVENT_LIBRARIES}")
+include_directories(${LIBEVENT_INCLUDE_DIRS})
+#list(APPEND LIB_APPS ${LIBEVENT_LIBRARIES})
+set(LIBS ${LIBS} ${LIBEVENT_LIBRARIES})
+
+set(SRC_CORE
+    src/address.c
+    src/client.c
+    src/ela.c
+    src/ela_libevent.c
+    src/endpoint.c
+    src/packet.c
+    src/peer.c
+    src/rudp.c
+    src/server.c
+    )
+
+set(HDR_PRIVATE
+    src/rudp_error.h
+    src/rudp_list.h
+    src/rudp_packet.h
+    src/rudp_rudp.h
+    )
+
+include_directories(include)
+
+set(HDR_PUBLIC
+    include/rudp/address.h
+    include/rudp/client.h
+    include/rudp/compiler.h
+    include/rudp/ela_backend.h
+    include/rudp/ela_ela.h
+    include/rudp/ela_libevent.h
+    include/rudp/endpoint.h
+    include/rudp/error.h
+    include/rudp/list.h
+    include/rudp/packet.h
+    include/rudp/peer.h
+    include/rudp/rudp.h
+    include/rudp/server.h
+    include/rudp/time.h
+    )
+
+source_group("Headers Private"  FILES ${HDR_PRIVATE})
+source_group("Headers Public"   FILES ${HDR_PUBLIC})
+source_group("Source Core"      FILES ${SRC_CORE})
+
+add_library(rudp SHARED
+    ${HDR_PRIVATE}
+    ${HDR_PUBLIC}
+    ${SRC_CORE}
+    )
+
+set_target_properties(rudp PROPERTIES PUBLIC_HEADER "${HDR_PUBLIC}")
+
+install(TARGETS rudp
+  # IMPORTANT: Add the rudp library to the "export-set"
+  EXPORT LibrudpTargets
+  RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+  LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/rudp"
+    COMPONENT dev)
 
 # The interesting stuff goes here
 # ===============================
