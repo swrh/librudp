@@ -60,9 +60,9 @@ endif()
 
 message("libevent include: ${LIBEVENT_INCLUDE_DIRS}")
 message("libevent lib: ${LIBEVENT_LIBRARIES}")
+
+link_directories(${LIBEVENT_LIBRARY_DIRS})
 include_directories(${LIBEVENT_INCLUDE_DIRS})
-#list(APPEND LIB_APPS ${LIBEVENT_LIBRARIES})
-set(LIBS ${LIBS} ${LIBEVENT_LIBRARIES})
 
 set(SRC_CORE
     src/address.c
@@ -111,6 +111,8 @@ add_library(rudp SHARED
     ${HDR_PUBLIC}
     ${SRC_CORE}
     )
+
+target_link_libraries(rudp ${LIBEVENT_LIBRARIES})
 
 set_target_properties(rudp PROPERTIES PUBLIC_HEADER "${HDR_PUBLIC}")
 
