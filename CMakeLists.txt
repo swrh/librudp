@@ -58,8 +58,8 @@ if (NOT RUDP__HAVE_LIBEVENT)
     message(FATAL_ERROR "package 'libevent' not found")
 endif()
 
-message("libevent include: ${LIBEVENT_INCLUDE_DIRS}")
-message("libevent lib: ${LIBEVENT_LIBRARIES}")
+message(STATUS "libevent include: ${LIBEVENT_INCLUDE_DIRS}")
+message(STATUS "libevent lib: ${LIBEVENT_LIBRARIES}")
 
 link_directories(${LIBEVENT_LIBRARY_DIRS})
 include_directories(${LIBEVENT_INCLUDE_DIRS})
