@@ -1,11 +1,14 @@
-set(PACKAGE_VERSION "@RUDP_VERSION@")
+# - Config file for the Librudp package
+# It defines the following variables
+#  LIBRUDP_INCLUDE_DIRS - include directories for Librudp
+#  LIBRUDP_LIBRARIES    - libraries to link against
 
-# Check whether the requested PACKAGE_FIND_VERSION is compatible
-if("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}")
-  set(PACKAGE_VERSION_COMPATIBLE FALSE)
-else()
-  set(PACKAGE_VERSION_COMPATIBLE TRUE)
-  if ("${PACKAGE_VERSION}" VERSION_EQUAL "${PACKAGE_FIND_VERSION}")
-    set(PACKAGE_VERSION_EXACT TRUE)
-  endif()
-endif()
+# Compute paths
+get_filename_component(LIBRUDP_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(LIBRUDP_INCLUDE_DIRS "@INSTALL_INCLUDE_DIR@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${LIBRUDP_CMAKE_DIR}/LibrudpTargets.cmake")
+
+# These are IMPORTED targets created by LibrudpTargets.cmake
+set(LIBRUDP_LIBRARIES rudp)
