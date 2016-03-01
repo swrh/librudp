@@ -24,7 +24,9 @@
 # include "config.h"
 #endif
 
-#include <event.h>
+#include <event2/event.h>
+#include <event2/event_struct.h>
+#include <event2/event_compat.h>
 
 #if defined(__GNUC__)
 #define INITIALIZER(f) \
