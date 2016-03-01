@@ -184,14 +184,4 @@ void rudp_deinit(struct rudp *rudp);
 RUDP_EXPORT
 uint16_t rudp_random(void);
 
-static __inline char *
-rudp_strdup(const char *s)
-{
-#ifdef _MSC_VER
-    return _strdup(s);
-#else
-    return strdup(s);
-#endif
-}
-
 #endif

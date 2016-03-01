@@ -54,7 +54,11 @@ rudp_error_t rudp_address_set_hostname(
 
     rua->port = port;
 
-    rua->hostname = rudp_strdup(hostname);
+#ifdef _MSC_VER
+    rua->hostname = _strdup(hostname);
+#else
+    rua->hostname = strdup(hostname);
+#endif
     if ( rua->hostname == NULL )
         return ENOMEM;
 
@@ -138,7 +142,11 @@ inet_ntop_strdup(int af, const void *src)
     if (p == NULL)
         return NULL;
 
-    return rudp_strdup(p);
+#ifdef _MSC_VER
+    return _strdup(p);
+#else
+    return strdup(p);
+#endif
 }
 
 void rudp_address_set_ipv4(
