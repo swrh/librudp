@@ -45,6 +45,11 @@ struct rudp_link_info;
 struct rudp_packet_header;
 struct rudp_packet_chain;
 
+struct rudp_link_info
+{
+    uint16_t acked;
+};
+
 /**
    Peer handler code callbacks
  */

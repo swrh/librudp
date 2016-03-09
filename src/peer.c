@@ -480,6 +480,7 @@ rudp_error_t rudp_peer_incoming_packet(
 static
 int peer_handle_ack(struct rudp_peer *peer, uint16_t ack)
 {
+    struct rudp_link_info link_info;
     int16_t ack_delta = (ack - peer->out_seq_acked);
     int16_t adv_delta = (ack - peer->out_seq_reliable);
 
@@ -518,6 +519,9 @@ int peer_handle_ack(struct rudp_peer *peer, uint16_t ack)
 
         if ( delta > 0 )
             break;
+
+        link_info.acked = seqno;
+        peer->handler->link_info(peer, &link_info);
 
         rudp_list_remove(&pc->chain_item);
         rudp_packet_chain_free(peer->rudp, pc);
