@@ -153,25 +153,51 @@ rudp_error_t rudp_client_send(
     const void *data,
     const size_t size)
 {
+    int i = 0;
+    size_t bytes_written = 0 ;
+    size_t bytes_to_write = 0;
+    size_t bytes_left = size;
+    size_t header_size = sizeof(struct rudp_packet_header);
+    size_t useful_packet_size = RUDP_RECV_BUFFER_SIZE - header_size;
+    size_t num_segments = size / useful_packet_size + (size % useful_packet_size != 0);
+    rudp_error_t error;
+
     if ( (command + RUDP_CMD_APP) > 255 )
         return EINVAL;
 
-    if ( !client->connected )
+    if( ! client->connected ){
         return EINVAL;
+    }
 
-    struct rudp_packet_chain *pc = rudp_packet_chain_alloc(
-        client->rudp, sizeof(struct rudp_packet_header) + size);
-    if ( pc == NULL )
+    struct rudp_packet_chain **pcs = NULL;
+
+    pcs = rudp_alloc(client->rudp,sizeof(struct rudp_packet_chain*)*num_segments);
+    if(pcs==NULL){
         return ENOMEM;
+    }
 
-    memcpy(&pc->packet->data.data[0], data, size);
+    for (i = 0; i < num_segments; i++) {
+        bytes_left = size - bytes_written;
 
-    pc->packet->header.command = RUDP_CMD_APP + command;
+        bytes_to_write = bytes_left < useful_packet_size ? bytes_left : useful_packet_size ;
+
+        pcs[i] = rudp_packet_chain_alloc(client->rudp, bytes_to_write+header_size);
+
+        memcpy(&pcs[i]->packet->data.data[0], data+bytes_written, bytes_to_write);
+
+        bytes_written += bytes_to_write;
+
+        pcs[i]->packet->header.command = RUDP_CMD_APP + command;
+    }
 
     if ( reliable )
-        return rudp_peer_send_reliable(&client->peer, pc);
+        error = rudp_peer_send_reliable_segments(&client->peer, pcs, num_segments);
     else
-        return rudp_peer_send_unreliable(&client->peer, pc);
+        error = rudp_peer_send_unreliable_segments(&client->peer, pcs, num_segments);
+
+    rudp_free(client->peer.rudp,pcs);
+
+    return error;
 }
 
 rudp_error_t rudp_client_set_hostname(
