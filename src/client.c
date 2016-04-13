@@ -88,7 +88,7 @@ void client_handle_data_packet(
 
     client->handler->handle_packet(
         client, header->header.command - RUDP_CMD_APP,
-        header->data, pc->len - sizeof(header));
+        header->data, pc->len - sizeof(header->header));
 }
 
 static

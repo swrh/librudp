@@ -125,6 +125,7 @@ struct rudp_peer
     uint8_t scheduled:1;
     uint8_t state;
     struct rudp_list sendq;
+    struct rudp_packet_chain *segments;
     struct rudp *rudp;
     struct ela_event_source *service_source;
     rudp_error_t sendto_err;
@@ -225,6 +226,12 @@ RUDP_EXPORT
 rudp_error_t rudp_peer_send_unreliable(
     struct rudp_peer *peer,
     struct rudp_packet_chain *pc);
+RUDP_EXPORT
+
+rudp_error_t rudp_peer_send_unreliable_segments(
+    struct rudp_peer *peer,
+    struct rudp_packet_chain **pc,
+    size_t segments_size);
 
 /**
    @this sends reliable data to a peer.
@@ -242,6 +249,11 @@ rudp_error_t rudp_peer_send_reliable(
     struct rudp_peer *peer,
     struct rudp_packet_chain *pc);
 
+rudp_error_t rudp_peer_send_reliable_segments(
+    struct rudp_peer *peer,
+    struct rudp_packet_chain **pc,
+    size_t segments_size);
+
 /**
    @this sends a reliable connect packet to a peer.
 
@@ -258,5 +270,11 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer);
  */
 RUDP_EXPORT
 rudp_error_t rudp_peer_send_close_noqueue(struct rudp_peer *peer);
+
+
+void rudp_peer_handle_segment(
+    struct rudp_peer *peer,
+    const struct rudp_packet_header *header,
+    struct rudp_packet_chain *pc);
 
 #endif

@@ -13,6 +13,9 @@
 /** @hidden */
 #define RUDP_RUDP_H_
 
+
+#define RUDP_VERSION 0x01
+
 /**
    @file
    @module {Master state}

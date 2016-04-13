@@ -118,7 +118,7 @@ void server_handle_data_packet(struct rudp_peer *_peer,
     peer->server->handler->handle_packet(
         peer->server, &peer->base,
         header->header.command - RUDP_CMD_APP,
-        header->data, pc->len - sizeof(header));
+        header->data, pc->len - sizeof(header->header));
 }
 
 static
@@ -231,23 +231,47 @@ rudp_error_t rudp_server_send(
     const void *data,
     const size_t size)
 {
+    int i = 0;
+    size_t bytes_written = 0 ;
+    size_t bytes_to_write = 0;
+    size_t bytes_left = size;
+    size_t header_size = sizeof(struct rudp_packet_header);
+    size_t useful_packet_size = RUDP_RECV_BUFFER_SIZE - header_size;
+    size_t num_segments = size / useful_packet_size + (size % useful_packet_size != 0);
+    rudp_error_t error;
+
     if ( (command + RUDP_CMD_APP) > 255 )
         return EINVAL;
 
-    struct rudp_packet_chain *pc = rudp_packet_chain_alloc(
-        server->rudp, sizeof(struct rudp_packet_header) + size);
+    struct rudp_packet_chain **pcs = NULL;
 
-    if ( pc == NULL )
+    pcs = rudp_alloc(server->rudp,sizeof(struct rudp_packet_chain*)*num_segments);
+    if(pcs==NULL){
         return ENOMEM;
+    }
 
-    memcpy(&pc->packet->data.data[0], data, size);
+    for (i = 0; i < num_segments; i++) {
+        bytes_left = size - bytes_written;
 
-    pc->packet->header.command = RUDP_CMD_APP + command;
+        bytes_to_write = bytes_left < useful_packet_size ? bytes_left : useful_packet_size ;
+
+        pcs[i] = rudp_packet_chain_alloc(server->rudp, bytes_to_write+header_size);
+
+        memcpy(&pcs[i]->packet->data.data[0], data+bytes_written, bytes_to_write);
+
+        bytes_written += bytes_to_write;
+
+        pcs[i]->packet->header.command = RUDP_CMD_APP + command;
+    }
 
     if ( reliable )
-        return rudp_peer_send_reliable(peer, pc);
+        error = rudp_peer_send_reliable_segments(peer, pcs, num_segments);
     else
-        return rudp_peer_send_unreliable(peer, pc);
+        error = rudp_peer_send_unreliable_segments(peer, pcs, num_segments);
+
+    rudp_free(peer->rudp,pcs);
+
+    return error;
 }
 
 rudp_error_t rudp_server_send_all(

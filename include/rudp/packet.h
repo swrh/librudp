@@ -147,11 +147,14 @@ enum rudp_command
  */
 struct rudp_packet_header
 {
+    uint8_t version;
     uint8_t command;
     uint8_t opt;
     uint16_t reliable_ack;
     uint16_t reliable;
     uint16_t unreliable;
+    uint16_t segments_size;
+    uint16_t segment_index;
 };
 
 /**
