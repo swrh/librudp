@@ -39,10 +39,14 @@ static void peer_service(struct rudp_peer *peer);
 static void _peer_service(struct ela_event_source *src,
                           evutil_socket_t fd, uint32_t mask, void *data);
 static void peer_service_schedule(struct rudp_peer *peer);
+static void rudp_peer_handle_segment(
+    struct rudp_peer *peer,
+    const struct rudp_packet_header *header,
+    struct rudp_packet_chain *pc);
 
-#define ACTION_TIMEOUT 50000
+#define ACTION_TIMEOUT 5000
 #define DROP_TIMEOUT (ACTION_TIMEOUT * 2)
-#define MAX_RTO 30000
+#define MAX_RTO 15000
 
 enum peer_state
 {
@@ -114,6 +118,7 @@ rudp_peer_deinit(struct rudp_peer *peer)
 
     rudp_peer_reset(peer);
     rudp_address_deinit(&peer->address);
+    rudp_free(peer->rudp,peer->segments);
 
     /* Avoid SEGFAULT in case rudp_peer_deinit() is called more than once. */
     if (peer->service_source != NULL) {
@@ -345,37 +350,12 @@ void peer_handle_connreq(
     peer_service_schedule(peer);
 }
 
-static void rudp_peer_merge_and_dispatch(
-    struct rudp_peer *peer)
-{
-    struct rudp_packet_chain * pc;
-    size_t total_size = 0;
-    size_t bytes_written = 0;
-    size_t header_size = sizeof(struct rudp_packet_header);
+/*
+ * Accumulate segments until one splitted message fully arrives,
+ * then dispatch the callbacks
+ */
 
-    rudp_list_for_each(struct rudp_packet_chain *, pc, &peer->sendq, chain_item){
-        total_size+= pc->len-header_size;
-    }
-
-    struct rudp_packet_chain * merged = rudp_packet_chain_alloc(
-            peer->rudp,total_size+sizeof(struct rudp_packet_header));
-
-    rudp_list_for_each(struct rudp_packet_chain *, pc, &peer->sendq, chain_item){
-        memcpy(&merged->packet->data + bytes_written, &pc->packet->data, pc->len - header_size);
-        bytes_written=pc->len-header_size;
-        rudp_list_remove(&pc->chain_item);
-    }
-    merged->len = bytes_written + header_size;
-    merged->alloc_size = merged->len;
-    //should we set header here?
-    //merged->packet->header.
-
-    peer->handler->handle_packet(peer,merged);
-
-    rudp_packet_chain_free(peer->rudp,merged);
-}
-
-void rudp_peer_handle_segment(
+static void rudp_peer_handle_segment(
     struct rudp_peer *peer,
     const struct rudp_packet_header *header,
     struct rudp_packet_chain *pc)
@@ -397,6 +377,8 @@ void rudp_peer_handle_segment(
         rudp_free(peer->rudp,peer->segments);
         peer->segments=rudp_packet_chain_alloc(peer->rudp,header_copy.segments_size*RUDP_RECV_BUFFER_SIZE);
         peer->segments->len=0;
+        peer->segments->packet->header.opt = header_copy.opt; //uint8 no ntohx required
+        peer->segments->packet->header.command = header_copy.command; //uint8 no ntohx required
     }
     memcpy(&peer->segments->packet->data.data[0] + peer->segments->len, &pc->packet->data.data[0],
             pc->len - header_size);

@@ -249,6 +249,19 @@ rudp_error_t rudp_peer_send_reliable(
     struct rudp_peer *peer,
     struct rudp_packet_chain *pc);
 
+/**
+   @this sends reliable data to a peer.
+
+   Calling code doesn't have to initialize the packet header.
+
+   @param peer Destination peer
+   @param pc Array of packet chain elements
+   @param segments_size number of packet chains
+
+   Peer handling code becomes owner of the @tt pc pointer, and may
+   free it when needed.
+ */
+
 rudp_error_t rudp_peer_send_reliable_segments(
     struct rudp_peer *peer,
     struct rudp_packet_chain **pc,
@@ -270,11 +283,5 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer);
  */
 RUDP_EXPORT
 rudp_error_t rudp_peer_send_close_noqueue(struct rudp_peer *peer);
-
-
-void rudp_peer_handle_segment(
-    struct rudp_peer *peer,
-    const struct rudp_packet_header *header,
-    struct rudp_packet_chain *pc);
 
 #endif
