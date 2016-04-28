@@ -118,7 +118,8 @@ rudp_peer_deinit(struct rudp_peer *peer)
 
     rudp_peer_reset(peer);
     rudp_address_deinit(&peer->address);
-    rudp_free(peer->rudp,peer->segments);
+    if(peer->segments)
+        rudp_packet_chain_free(peer->rudp,peer->segments);
 
     /* Avoid SEGFAULT in case rudp_peer_deinit() is called more than once. */
     if (peer->service_source != NULL) {
