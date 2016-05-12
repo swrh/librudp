@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
+#include <inttypes.h>
 #include <rudp/packet.h>
 #include <rudp/server.h>
 #include <rudp/peer.h>
@@ -257,7 +257,7 @@ rudp_error_t rudp_server_send(
 
         pcs[i] = rudp_packet_chain_alloc(server->rudp, bytes_to_write+header_size);
 
-        memcpy(&pcs[i]->packet->data.data[0], data+bytes_written, bytes_to_write);
+        memcpy(&pcs[i]->packet->data.data[0], ((uint8_t) data) + bytes_written, bytes_to_write);
 
         bytes_written += bytes_to_write;
 
