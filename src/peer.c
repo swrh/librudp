@@ -66,9 +66,11 @@ rudp_peer_reset(struct rudp_peer *peer)
     if (peer == NULL)
         return;
 
-    rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &peer->sendq, chain_item) {
-        rudp_list_remove(&pc->chain_item);
-        rudp_packet_chain_free(peer->rudp, pc);
+    if (peer->sendq.next != NULL) {
+        rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &peer->sendq, chain_item) {
+            rudp_list_remove(&pc->chain_item);
+            rudp_packet_chain_free(peer->rudp, pc);
+        }
     }
 
     if (peer->scheduled)
