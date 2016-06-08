@@ -222,8 +222,6 @@ static const struct rudp_endpoint_handler server_endpoint_handler = {
     .handle_packet = server_handle_endpoint_packet,
 };
 
-/***/
-
 rudp_error_t rudp_server_send(
     struct rudp_server *server,
     struct rudp_peer *peer,
@@ -257,7 +255,7 @@ rudp_error_t rudp_server_send(
 
         pcs[i] = rudp_packet_chain_alloc(server->rudp, bytes_to_write+header_size);
 
-        memcpy(&pcs[i]->packet->data.data[0], ((uint8_t) data) + bytes_written, bytes_to_write);
+        memcpy(&pcs[i]->packet->data.data[0], (const char *)data + bytes_written, bytes_to_write);
 
         bytes_written += bytes_to_write;
 

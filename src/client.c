@@ -183,7 +183,7 @@ rudp_error_t rudp_client_send(
 
         pcs[i] = rudp_packet_chain_alloc(client->rudp, bytes_to_write+header_size);
 
-        memcpy(&pcs[i]->packet->data.data[0], ((uint8_t)data) + bytes_written, bytes_to_write);
+        memcpy(&pcs[i]->packet->data.data[0], (const char *)data + bytes_written, bytes_to_write);
 
         bytes_written += bytes_to_write;
 
