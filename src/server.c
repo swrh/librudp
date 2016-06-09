@@ -33,23 +33,24 @@ static const struct rudp_endpoint_handler server_endpoint_handler;
 
 void
 rudp_server_init(struct rudp_server *server, struct rudp *rudp,
-        const struct rudp_server_handler *handler)
+        const struct rudp_server_handler *handler, void *arg)
 {
     rudp_endpoint_init(&server->endpoint, rudp, &server_endpoint_handler);
     rudp_list_init(&server->peer_list);
     server->handler = handler;
+    server->arg = arg;
     server->rudp = rudp;
 }
 
 struct rudp_server *
-rudp_server_new(struct rudp *rudp, const struct rudp_server_handler *handler)
+rudp_server_new(struct rudp *rudp, const struct rudp_server_handler *handler, void *arg)
 {
     struct rudp_server *server = rudp->handler->mem_alloc(rudp, sizeof(struct rudp_server));
 
     if (server == NULL)
         return NULL;
 
-    rudp_server_init(server, rudp, handler);
+    rudp_server_init(server, rudp, handler, arg);
 
     return server;
 }
@@ -91,7 +92,7 @@ rudp_error_t rudp_server_close(struct rudp_server *server)
     struct server_peer *peer, *tmp;
     rudp_list_for_each_safe(struct server_peer *, peer, tmp, &server->peer_list, server_item)
     {
-        peer->server->handler->peer_dropped(peer->server, &peer->base);
+        peer->server->handler->peer_dropped(peer->server, &peer->base, peer->server->arg);
         rudp_server_client_close(server, &peer->base);
     }
 
@@ -136,10 +137,10 @@ void server_handle_data_packet(struct rudp_peer *_peer,
     struct server_peer *peer = (struct server_peer *)_peer;
     struct rudp_packet_data *header = &pc->packet->data;
 
-    peer->server->handler->handle_packet(
-        peer->server, &peer->base,
-        header->header.command - RUDP_CMD_APP,
-        header->data, pc->len - sizeof(header->header));
+    peer->server->handler->handle_packet(peer->server, &peer->base,
+            header->header.command - RUDP_CMD_APP,
+            header->data, pc->len - sizeof(header->header),
+            peer->server->arg);
 }
 
 static
@@ -148,7 +149,8 @@ void server_link_info(struct rudp_peer *_peer,
 {
     struct server_peer *peer = (struct server_peer *)_peer;
 
-    peer->server->handler->link_info(peer->server, _peer, info);
+    peer->server->handler->link_info(peer->server, _peer, info,
+            peer->server->arg);
 }
 
 static
@@ -158,7 +160,8 @@ void server_peer_dropped(struct rudp_peer *_peer)
 
     rudp_log_printf(peer->base.rudp, RUDP_LOG_INFO, "Peer dropped\n");
 
-    peer->server->handler->peer_dropped(peer->server, _peer);
+    peer->server->handler->peer_dropped(peer->server, _peer,
+            peer->server->arg);
 
     server_peer_forget(peer->server, peer);
 }
@@ -230,7 +233,7 @@ void server_handle_endpoint_packet(struct rudp_endpoint *endpoint,
 
     err = rudp_peer_incoming_packet(&peer->base, pc);
     if ( err == 0 )
-        server->handler->peer_new(server, &peer->base);
+        server->handler->peer_new(server, &peer->base, server->arg);
     else
         server_peer_forget(server, peer);
     return;

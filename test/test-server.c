@@ -27,7 +27,7 @@
 
 static void
 handle_packet(struct rudp_server *server, struct rudp_peer *peer, int command,
-        const void *data, size_t len)
+        const void *data, size_t len, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
     printf(">>> command %d message '''", command);
@@ -39,19 +39,19 @@ handle_packet(struct rudp_server *server, struct rudp_peer *peer, int command,
 
 static void
 link_info(struct rudp_server *server, struct rudp_peer *peer,
-        struct rudp_link_info *info)
+        struct rudp_link_info *info, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
 
 static void
-peer_dropped(struct rudp_server *server, struct rudp_peer *peer)
+peer_dropped(struct rudp_server *server, struct rudp_peer *peer, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
 
 static void
-peer_new(struct rudp_server *server, struct rudp_peer *peer)
+peer_new(struct rudp_server *server, struct rudp_peer *peer, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
     address.s_addr = INADDR_ANY;
 
-    rudp_server_init(&server, &rudp, &handler);
+    rudp_server_init(&server, &rudp, &handler, NULL);
     rudp_server_set_ipv4(&server, &address, 4242);
     display_err(  rudp_server_bind(&server)  );
 

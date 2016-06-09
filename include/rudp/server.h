@@ -100,7 +100,7 @@ struct rudp_server_handler
        @param len Useful data length
      */
     void (*handle_packet)(struct rudp_server *server, struct rudp_peer *peer,
-                          int command, const void *data, size_t len);
+            int command, const void *data, size_t len, void *arg);
 
     /**
        @this is called anytime when link statistics are updated.
@@ -109,10 +109,8 @@ struct rudp_server_handler
        @param peer Relevant peer
        @param info Link quality updated information
      */
-    void (*link_info)(
-        struct rudp_server *server,
-        struct rudp_peer *peer,
-        struct rudp_link_info *info);
+    void (*link_info)(struct rudp_server *server, struct rudp_peer *peer,
+            struct rudp_link_info *info, void *arg);
 
     /**
        @this is called when a peer drops, either explicitely or
@@ -125,7 +123,8 @@ struct rudp_server_handler
        @param server Server context
        @param peer Relevant peer
      */
-    void (*peer_dropped)(struct rudp_server *server, struct rudp_peer *peer);
+    void (*peer_dropped)(struct rudp_server *server, struct rudp_peer *peer,
+            void *arg);
 
     /**
        @this is called when a new peer gets connected.  When this
@@ -142,7 +141,8 @@ struct rudp_server_handler
        @param server Server context
        @param peer New peer
      */
-    void (*peer_new)(struct rudp_server *server, struct rudp_peer *peer);
+    void (*peer_new)(struct rudp_server *server, struct rudp_peer *peer,
+            void *arg);
 };
 
 /**
@@ -164,6 +164,7 @@ struct rudp_server_handler
 struct rudp_server
 {
     const struct rudp_server_handler *handler;
+    void *arg;
     struct rudp_list peer_list;
     struct rudp_endpoint endpoint;
     struct rudp *rudp;
@@ -184,12 +185,14 @@ RUDP_EXPORT
 void rudp_server_init(
     struct rudp_server *server,
     struct rudp *rudp,
-    const struct rudp_server_handler *handler);
+    const struct rudp_server_handler *handler,
+    void *arg);
 
 RUDP_EXPORT
 struct rudp_server *rudp_server_new(
     struct rudp *rudp,
-    const struct rudp_server_handler *handler);
+    const struct rudp_server_handler *handler,
+    void *arg);
 
 /**
    @this binds the server context to an address.  This both creates a
