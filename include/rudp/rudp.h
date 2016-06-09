@@ -168,7 +168,7 @@ struct rudp
    #RUDP_HANDLER_DEFAULT if no specific behavior is intended.
  */
 RUDP_EXPORT
-rudp_error_t rudp_init(
+void rudp_init(
     struct rudp *rudp,
     struct event_base *eb,
     const struct rudp_handler *handler);

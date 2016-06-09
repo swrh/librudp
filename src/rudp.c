@@ -20,7 +20,7 @@
 #include "rudp_list.h"
 #include "rudp_rudp.h"
 
-rudp_error_t rudp_init(
+void rudp_init(
     struct rudp *rudp,
     struct event_base *eb,
     const struct rudp_handler *handler)
@@ -31,8 +31,6 @@ rudp_error_t rudp_init(
     rudp_list_init(&rudp->free_packet_list);
     rudp->free_packets = 0;
     rudp->allocated_packets = 0;
-
-    return 0;
 }
 
 static
@@ -73,10 +71,10 @@ rudp_new(struct event_base *eb, const struct rudp_handler *handler)
         handler = &rudp_handler_default;
 
     rudp = handler->mem_alloc(NULL, sizeof(struct rudp));
-    if (rudp_init(rudp, eb, handler) != 0) {
-        handler->mem_free(NULL, rudp);
+    if (rudp == NULL)
         return NULL;
-    }
+
+    rudp_init(rudp, eb, handler);
 
     return rudp;
 }

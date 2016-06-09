@@ -181,8 +181,13 @@ struct rudp_peer;
    @returns a possible error
  */
 RUDP_EXPORT
-rudp_error_t rudp_server_init(
+void rudp_server_init(
     struct rudp_server *server,
+    struct rudp *rudp,
+    const struct rudp_server_handler *handler);
+
+RUDP_EXPORT
+struct rudp_server *rudp_server_new(
     struct rudp *rudp,
     const struct rudp_server_handler *handler);
 
@@ -220,7 +225,10 @@ rudp_error_t rudp_server_close(struct rudp_server *server);
    @returns a possible error
  */
 RUDP_EXPORT
-rudp_error_t rudp_server_deinit(struct rudp_server *server);
+void rudp_server_deinit(struct rudp_server *server);
+
+RUDP_EXPORT
+void rudp_server_free(struct rudp_server *server);
 
 /**
    @this specifies a hostname to bind to.  Actual underlying address

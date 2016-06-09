@@ -31,16 +31,27 @@ struct server_peer
 
 static const struct rudp_endpoint_handler server_endpoint_handler;
 
-rudp_error_t rudp_server_init(
-    struct rudp_server *server,
-    struct rudp *rudp,
-    const struct rudp_server_handler *handler)
+void
+rudp_server_init(struct rudp_server *server, struct rudp *rudp,
+        const struct rudp_server_handler *handler)
 {
     rudp_endpoint_init(&server->endpoint, rudp, &server_endpoint_handler);
     rudp_list_init(&server->peer_list);
     server->handler = handler;
     server->rudp = rudp;
-    return 0;
+}
+
+struct rudp_server *
+rudp_server_new(struct rudp *rudp, const struct rudp_server_handler *handler)
+{
+    struct rudp_server *server = rudp->handler->mem_alloc(rudp, sizeof(struct rudp_server));
+
+    if (server == NULL)
+        return NULL;
+
+    rudp_server_init(server, rudp, handler);
+
+    return server;
 }
 
 rudp_error_t rudp_server_bind(struct rudp_server *server)
@@ -88,11 +99,21 @@ rudp_error_t rudp_server_close(struct rudp_server *server)
     return 0;
 }
 
-rudp_error_t rudp_server_deinit(struct rudp_server *server)
+void
+rudp_server_deinit(struct rudp_server *server)
 {
     rudp_endpoint_deinit(&server->endpoint);
     rudp_list_init(&server->peer_list);
-    return 0;
+}
+
+void
+rudp_server_free(struct rudp_server *server)
+{
+    if (server == NULL)
+        return;
+
+    rudp_server_deinit(server);
+    server->rudp->handler->mem_free(server->rudp, server);
 }
 
 static

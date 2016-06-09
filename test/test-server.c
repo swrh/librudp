@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
     address.s_addr = INADDR_ANY;
 
-    display_err(  rudp_server_init(&server, &rudp, &handler)  );
+    rudp_server_init(&server, &rudp, &handler);
     rudp_server_set_ipv4(&server, &address, 4242);
     display_err(  rudp_server_bind(&server)  );
 
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     event_free(ev);
 
     display_err(  rudp_server_close(&server)  );
-    display_err(  rudp_server_deinit(&server)  );
+    rudp_server_deinit(&server);
 
     rudp_deinit(&rudp);
     event_base_free(eb);
