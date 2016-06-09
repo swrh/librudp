@@ -74,6 +74,10 @@
 #include <rudp/error.h>
 #include <rudp/compiler.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
    @this defines log levels of log messages.
  */
@@ -186,5 +190,9 @@ void rudp_deinit(struct rudp *rudp);
  */
 RUDP_EXPORT
 uint16_t rudp_random(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

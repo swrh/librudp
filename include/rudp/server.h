@@ -72,6 +72,10 @@
 #include <rudp/packet.h>
 #include <rudp/compiler.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct rudp_server;
 struct rudp_link_info;
 struct rudp_peer;
@@ -356,5 +360,9 @@ RUDP_EXPORT
 void rudp_server_client_close(
     struct rudp_server *server,
     struct rudp_peer *peer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

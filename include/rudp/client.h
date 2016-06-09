@@ -75,6 +75,10 @@
 #include <rudp/packet.h>
 #include <rudp/peer.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct rudp_client;
 struct rudp_link_info;
 struct rudp_peer;
@@ -290,5 +294,9 @@ RUDP_EXPORT
 rudp_error_t rudp_client_send(struct rudp_client *client,
                               int reliable, int command,
                               const void *data, const size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

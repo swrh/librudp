@@ -41,6 +41,10 @@
 #include <rudp/list.h>
 #include <rudp/compiler.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
    Command definition codes
  */
@@ -218,5 +222,9 @@ struct rudp_packet_chain
  */
 RUDP_EXPORT
 const char *rudp_command_name(enum rudp_command cmd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

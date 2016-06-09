@@ -32,6 +32,10 @@
 #include <rudp/address.h>
 #include <rudp/compiler.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct rudp_peer;
 struct rudp_endpoint;
 struct rudp_packet_chain;
@@ -224,5 +228,9 @@ rudp_error_t rudp_endpoint_recv(struct rudp_endpoint *endpoint,
 RUDP_EXPORT
 int rudp_endpoint_address_compare(const struct rudp_endpoint *endpoint,
                                   const struct sockaddr_storage *addr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -60,6 +60,10 @@
 #define RUDP_IPV6_ONLY RUDP_NO_IPV4
 #define RUDP_IP_ANY    0
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
    @this is an abstract representation of an address.
 
@@ -231,5 +235,9 @@ void rudp_address_deinit(struct rudp_address *addr);
 RUDP_EXPORT
 int rudp_address_compare(const struct rudp_address *address,
                          const struct sockaddr_storage *addr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -39,6 +39,10 @@
 #include <rudp/address.h>
 #include <rudp/compiler.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct rudp_peer;
 struct rudp_endpoint;
 struct rudp_link_info;
@@ -282,5 +286,9 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer);
  */
 RUDP_EXPORT
 rudp_error_t rudp_peer_send_close_noqueue(struct rudp_peer *peer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
