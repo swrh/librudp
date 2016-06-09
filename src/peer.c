@@ -372,7 +372,7 @@ static void rudp_peer_handle_segment(
     }
 
     if(header_copy.segment_index == 0){//segments_size > 1
-        rudp_free(peer->rudp,peer->segments);
+        rudp_mem_free(peer->rudp,peer->segments);
         peer->segments=rudp_packet_chain_alloc(peer->rudp,header_copy.segments_size*RUDP_RECV_BUFFER_SIZE);
         peer->segments->len=0;
         peer->segments->packet->header.opt = header_copy.opt; //uint8 no ntohx required

@@ -53,7 +53,7 @@ struct rudp_packet_chain *rudp_packet_chain_alloc(
         }
     }
 
-    pc = rudp_alloc(rudp, sizeof(*pc)+alloc);
+    pc = rudp_mem_alloc(rudp, sizeof(*pc)+alloc);
     if ( pc == NULL )
         return NULL;
 
@@ -73,7 +73,7 @@ void rudp_packet_chain_free(struct rudp *rudp, struct rudp_packet_chain *pc)
         rudp_list_insert(&rudp->free_packet_list, &pc->chain_item);
         rudp->free_packets++;
     } else {
-        rudp_free(rudp, pc);
+        rudp_mem_free(rudp, pc);
         rudp->allocated_packets--;
     }
 
@@ -82,7 +82,7 @@ void rudp_packet_chain_free(struct rudp *rudp, struct rudp_packet_chain *pc)
             rudp_list_remove(&pc->chain_item);
             rudp->free_packets--;
             rudp->allocated_packets--;
-            rudp_free(rudp, pc);
+            rudp_mem_free(rudp, pc);
             break;
         }
     }

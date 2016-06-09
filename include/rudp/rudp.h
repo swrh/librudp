@@ -166,8 +166,6 @@ struct rudp
    @param eb A valid event loop abstraction context
    @param handler A rudp handler descriptor. Use @ref
    #RUDP_HANDLER_DEFAULT if no specific behavior is intended.
-
-   @returns a possible error
  */
 RUDP_EXPORT
 rudp_error_t rudp_init(
@@ -182,6 +180,14 @@ rudp_error_t rudp_init(
  */
 RUDP_EXPORT
 void rudp_deinit(struct rudp *rudp);
+
+RUDP_EXPORT
+struct rudp *rudp_new(
+    struct event_base *eb,
+    const struct rudp_handler *handler);
+
+RUDP_EXPORT
+void rudp_free(struct rudp *rudp);
 
 /**
    @this generates a 16 bit random value

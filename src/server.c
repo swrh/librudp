@@ -64,7 +64,7 @@ static void server_peer_forget(struct rudp_server *server,
 {
     rudp_list_remove(&peer->server_item);
     rudp_peer_deinit(&peer->base);
-    rudp_free(server->rudp, peer);
+    rudp_mem_free(server->rudp, peer);
 }
 
 void rudp_server_client_close(struct rudp_server *server,
@@ -151,7 +151,7 @@ static const struct rudp_peer_handler server_peer_handler = {
 static struct server_peer *server_peer_new(struct rudp_server *server,
                                            const struct sockaddr_storage *addr)
 {
-    struct server_peer *peer = rudp_alloc(server->rudp, sizeof(*peer));
+    struct server_peer *peer = rudp_mem_alloc(server->rudp, sizeof(*peer));
 
     if ( peer == NULL )
         return NULL;
@@ -243,7 +243,7 @@ rudp_error_t rudp_server_send(
 
     struct rudp_packet_chain **pcs = NULL;
 
-    pcs = rudp_alloc(server->rudp,sizeof(struct rudp_packet_chain*)*num_segments);
+    pcs = rudp_mem_alloc(server->rudp,sizeof(struct rudp_packet_chain*)*num_segments);
     if(pcs==NULL){
         return ENOMEM;
     }
@@ -267,7 +267,7 @@ rudp_error_t rudp_server_send(
     else
         error = rudp_peer_send_unreliable_segments(peer, pcs, num_segments);
 
-    rudp_free(peer->rudp,pcs);
+    rudp_mem_free(peer->rudp,pcs);
 
     return error;
 }

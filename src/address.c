@@ -115,7 +115,7 @@ rudp_address_deinit(struct rudp_address *rua)
     rua->hostname = NULL;
 
     if (rua->rudp && rua->addr)
-        rudp_free(rua->rudp, rua->addr);
+        rudp_mem_free(rua->rudp, rua->addr);
     rua->addr = NULL;
 
     rua->text[0] = 0;
@@ -128,7 +128,7 @@ void rudp_address_init(struct rudp_address *rua, struct rudp *rudp)
 
     rua->rudp = rudp;
     rua->resolver_state = RUDP_RESOLV_NONE;
-    rua->addr = rudp_alloc(rudp, sizeof(struct sockaddr_storage));
+    rua->addr = rudp_mem_alloc(rudp, sizeof(struct sockaddr_storage));
     memset(rua->addr, 0, sizeof(struct sockaddr_storage));
 }
 

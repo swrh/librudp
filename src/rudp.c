@@ -60,8 +60,32 @@ void rudp_deinit(struct rudp *rudp)
     struct rudp_packet_chain *pc, *tmp;
     rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &rudp->free_packet_list, chain_item) {
         rudp_list_remove(&pc->chain_item);
-        rudp_free(rudp, pc);
+        rudp_mem_free(rudp, pc);
     }
+}
+
+struct rudp *
+rudp_new(struct event_base *eb, const struct rudp_handler *handler)
+{
+    struct rudp *rudp;
+
+    if (handler == NULL)
+        handler = &rudp_handler_default;
+
+    rudp = handler->mem_alloc(NULL, sizeof(struct rudp));
+    if (rudp_init(rudp, eb, handler) != 0) {
+        handler->mem_free(NULL, rudp);
+        return NULL;
+    }
+
+    return rudp;
+}
+
+void
+rudp_free(struct rudp *rudp)
+{
+    if (rudp != NULL)
+        rudp->handler->mem_free(rudp, rudp);
 }
 
 uint16_t rudp_random(void)

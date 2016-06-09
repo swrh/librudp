@@ -171,7 +171,7 @@ rudp_error_t rudp_client_send(
 
     struct rudp_packet_chain **pcs = NULL;
 
-    pcs = rudp_alloc(client->rudp,sizeof(struct rudp_packet_chain*)*num_segments);
+    pcs = rudp_mem_alloc(client->rudp,sizeof(struct rudp_packet_chain*)*num_segments);
     if(pcs==NULL){
         return ENOMEM;
     }
@@ -195,7 +195,7 @@ rudp_error_t rudp_client_send(
     else
         error = rudp_peer_send_unreliable_segments(&client->peer, pcs, num_segments);
 
-    rudp_free(client->peer.rudp,pcs);
+    rudp_mem_free(client->peer.rudp,pcs);
 
     return error;
 }

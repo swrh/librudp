@@ -32,13 +32,13 @@ void rudp_log_printf(
 }
 
 static __inline
-void *rudp_alloc(struct rudp *rudp, size_t len)
+void *rudp_mem_alloc(struct rudp *rudp, size_t len)
 {
     return rudp->handler->mem_alloc(rudp, len);
 }
 
 static __inline
-void rudp_free(struct rudp *rudp, void *buffer)
+void rudp_mem_free(struct rudp *rudp, void *buffer)
 {
     rudp->handler->mem_free(rudp, buffer);
 }
