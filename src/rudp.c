@@ -22,11 +22,11 @@
 
 rudp_error_t rudp_init(
     struct rudp *rudp,
-    struct ela_el *el,
+    struct event_base *eb,
     const struct rudp_handler *handler)
 {
     rudp->handler = handler;
-    rudp->el = el;
+    rudp->eb = eb;
 
     rudp_list_init(&rudp->free_packet_list);
     rudp->free_packets = 0;
@@ -38,7 +38,7 @@ rudp_error_t rudp_init(
 static
 void *_rudp_default_alloc(struct rudp *rudp, size_t len)
 {
-    return malloc(len);
+    return calloc(1, len);
 }
 
 static

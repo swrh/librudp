@@ -74,7 +74,6 @@
 #include <rudp/address.h>
 #include <rudp/packet.h>
 #include <rudp/peer.h>
-#include <rudp/ela_ela.h>
 
 struct rudp_client;
 struct rudp_link_info;

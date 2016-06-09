@@ -30,7 +30,6 @@
 #include <event2/util.h>
 
 #include <rudp/address.h>
-#include <rudp/ela_ela.h>
 #include <rudp/compiler.h>
 
 struct rudp_peer;
@@ -79,7 +78,7 @@ struct rudp_endpoint
     const struct rudp_endpoint_handler *handler;
     struct rudp_address addr;
     struct rudp *rudp;
-    struct ela_event_source *ela_source;
+    struct event *ev;
     evutil_socket_t socket_fd;
 };
 

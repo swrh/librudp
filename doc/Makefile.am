@@ -1,4 +1,3 @@
-
 if HAVE_MKDOC
 
 html-local:

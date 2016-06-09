@@ -146,9 +146,9 @@ static const struct rudp_server_handler my_server_handler =
 void my_server_init()
 {
     struct rudp_server *server = malloc(sizeof(*server));
-    struct ela_el *el = ...;
+    struct event_base *eb = ...;
 
-    rudp_error_t err = rudp_server_init(server, el, &my_server_handler);
+    rudp_error_t err = rudp_server_init(server, eb, &my_server_handler);
 }
     @end code
   @end section
@@ -187,10 +187,10 @@ void my_server_init()
     /* check allocation error */
 
     /* find an ELA implementation */
-    struct ela_el *el = ...;
+    struct event_base *eb = ...;
 
     rudp_error_t err =
-        rudp_server_init(&server->server, el, &my_server_handler);
+        rudp_server_init(&server->server, eb, &my_server_handler);
 
     /* handle errors, be happy */
 }

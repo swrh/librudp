@@ -51,9 +51,9 @@
    Sample usage:
    @code
     struct rudp rudp;
-    struct ela_el *el = ...;
+    struct event_base *eb = ...;
 
-    rudp_init(&rudp, el, RUDP_HANDLER_DEFAULT);
+    rudp_init(&rudp, eb, RUDP_HANDLER_DEFAULT);
 
     // allocate and initialize some objects
 
@@ -149,7 +149,7 @@ extern RUDP_EXPORT const struct rudp_handler rudp_handler_default;
 struct rudp
 {
     const struct rudp_handler *handler;
-    struct ela_el *el;
+    struct event_base *eb;
     struct rudp_list free_packet_list;
     uint16_t allocated_packets;
     uint16_t free_packets;
@@ -159,7 +159,7 @@ struct rudp
    @this initializes a master library state structure
 
    @param rudp Rudp context to initialize
-   @param el A valid event loop abstraction context
+   @param eb A valid event loop abstraction context
    @param handler A rudp handler descriptor. Use @ref
    #RUDP_HANDLER_DEFAULT if no specific behavior is intended.
 
@@ -168,7 +168,7 @@ struct rudp
 RUDP_EXPORT
 rudp_error_t rudp_init(
     struct rudp *rudp,
-    struct ela_el *el,
+    struct event_base *eb,
     const struct rudp_handler *handler);
 
 /**

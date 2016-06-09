@@ -14,45 +14,44 @@
 #include <string.h>
 #include <netinet/in.h>
 
+#include <event2/event.h>
+
 #include <rudp/rudp.h>
 #include <rudp/server.h>
 
 #define display_err(statement) \
     do { \
-    rudp_error_t err = statement; \
-    printf("%s:%d %s: %s\n", __FILE__, __LINE__, #statement, strerror(err)); \
+        rudp_error_t err = statement; \
+        printf("%s:%d %s: %s\n", __FILE__, __LINE__, #statement, strerror(err)); \
     } while(0)
 
-static
-void handle_packet(struct rudp_server *server,
-                   struct rudp_peer *peer,
-                   int command, const void *data, size_t len)
+static void
+handle_packet(struct rudp_server *server, struct rudp_peer *peer, int command,
+        const void *data, size_t len)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
     printf(">>> command %d message '''", command);
     fwrite(data, 1, len, stdout);
     printf("'''\n");
     if ( !strncmp((const char *)data, "quit", 4) )
-        ela_exit(server->rudp->el);
+        event_base_loopbreak(server->rudp->eb);
 }
 
-static
-void link_info(
-    struct rudp_server *server,
-    struct rudp_peer *peer,
-    struct rudp_link_info *info)
+static void
+link_info(struct rudp_server *server, struct rudp_peer *peer,
+        struct rudp_link_info *info)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
 
-static
-void peer_dropped(struct rudp_server *server, struct rudp_peer *peer)
+static void
+peer_dropped(struct rudp_server *server, struct rudp_peer *peer)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
 
-static
-void peer_new(struct rudp_server *server, struct rudp_peer *peer)
+static void
+peer_new(struct rudp_server *server, struct rudp_peer *peer)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
@@ -64,12 +63,10 @@ static const struct rudp_server_handler handler = {
     .peer_new = peer_new,
 };
 
-static
-void handle_stdin(
-    struct ela_event_source *source,
-    int fd, uint32_t mask, void *data)
+static void
+handle_stdin(evutil_socket_t fd, short events, void *param)
 {
-    struct rudp_server *server = data;
+    struct rudp_server *server = param;
     char buffer[512], *tmp;
 
     tmp = fgets(buffer, 512, stdin);
@@ -83,17 +80,17 @@ int main(int argc, char **argv)
 {
     struct rudp_server server;
     struct in_addr address;
-    struct ela_el *el = ela_create(NULL);
-    struct ela_event_source *source;
+    struct event_base *eb = event_base_new();
+    struct event *ev;
     struct rudp rudp;
     const struct rudp_handler *my_handler = RUDP_HANDLER_DEFAULT;
 
     if ( argc > 1 && !strcmp(argv[1], "-v") )
         my_handler = &verbose_handler;
 
-    rudp_init(&rudp, el, my_handler);
+    rudp_init(&rudp, eb, my_handler);
 
-    ela_source_alloc(el, handle_stdin, &server, &source);
+    ev = event_new(eb, 0, EV_PERSIST|EV_READ, handle_stdin, &server);
 
     address.s_addr = INADDR_ANY;
 
@@ -101,19 +98,19 @@ int main(int argc, char **argv)
     rudp_server_set_ipv4(&server, &address, 4242);
     display_err(  rudp_server_bind(&server)  );
 
-    ela_set_fd(el, source, 0, ELA_EVENT_READABLE);
-    ela_add(el, source);
+    if (event_add(ev, NULL) == -1)
+        err(EXIT_FAILURE, "event_add");
 
-    ela_run(el);
+    if (event_base_loop(eb, 0) == -1)
+        err(EXIT_FAILURE, "event_base_loop");
 
-    ela_remove(el, source);
-    ela_source_free(el, source);
+    event_free(ev);
 
     display_err(  rudp_server_close(&server)  );
     display_err(  rudp_server_deinit(&server)  );
 
     rudp_deinit(&rudp);
-    ela_close(el);
+    event_base_free(eb);
 
     return 0;
 }

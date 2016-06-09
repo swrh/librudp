@@ -71,7 +71,6 @@
 #include <rudp/endpoint.h>
 #include <rudp/packet.h>
 #include <rudp/compiler.h>
-#include <rudp/ela_ela.h>
 
 struct rudp_server;
 struct rudp_link_info;

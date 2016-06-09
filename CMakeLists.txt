@@ -67,8 +67,6 @@ include_directories(${LIBEVENT_INCLUDE_DIRS})
 set(SRC_CORE
     src/address.c
     src/client.c
-    src/ela.c
-    src/ela_libevent.c
     src/endpoint.c
     src/packet.c
     src/peer.c
@@ -77,7 +75,6 @@ set(SRC_CORE
     )
 
 set(HDR_PRIVATE
-    src/rudp_error.h
     src/rudp_list.h
     src/rudp_packet.h
     src/rudp_rudp.h
@@ -89,9 +86,6 @@ set(HDR_PUBLIC
     include/rudp/address.h
     include/rudp/client.h
     include/rudp/compiler.h
-    include/rudp/ela_backend.h
-    include/rudp/ela_ela.h
-    include/rudp/ela_libevent.h
     include/rudp/endpoint.h
     include/rudp/error.h
     include/rudp/list.h

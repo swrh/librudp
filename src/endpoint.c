@@ -15,14 +15,13 @@
 # include <unistd.h>
 #endif
 
-#include <event2/util.h>
+#include <event2/event.h>
 
 #include <rudp/error.h>
 #include <rudp/endpoint.h>
 #include <rudp/packet.h>
 
 #include "rudp_packet.h"
-#include "rudp_error.h"
 
 #ifdef _MSC_VER
 #define RUDP_INVALID_SOCKET INVALID_SOCKET
@@ -30,8 +29,8 @@
 #define RUDP_INVALID_SOCKET -1
 #endif
 
-static void _endpoint_handle_incoming(struct ela_event_source *src,
-                                      evutil_socket_t fd, uint32_t mask, void *data);
+static void _endpoint_handle_incoming(evutil_socket_t fd, short flags,
+        void *data);
 
 void rudp_endpoint_init(
     struct rudp_endpoint *endpoint,
@@ -42,15 +41,20 @@ void rudp_endpoint_init(
     endpoint->socket_fd = RUDP_INVALID_SOCKET;
     endpoint->rudp = rudp;
     endpoint->handler = handler;
-    ela_source_alloc(rudp->el, _endpoint_handle_incoming,
-                     endpoint, &endpoint->ela_source);
+
+    endpoint->ev = NULL;
 }
 
 
-void rudp_endpoint_deinit(struct rudp_endpoint *endpoint)
+void
+rudp_endpoint_deinit(struct rudp_endpoint *endpoint)
 {
     rudp_address_deinit(&endpoint->addr);
-    ela_source_free(endpoint->rudp->el, endpoint->ela_source);
+
+    if (endpoint->ev != NULL) {
+        event_free(endpoint->ev);
+        endpoint->ev = NULL;
+    }
 }
 
 /*
@@ -59,8 +63,7 @@ void rudp_endpoint_deinit(struct rudp_endpoint *endpoint)
         - server/client packet handler
  */
 static void
-_endpoint_handle_incoming(struct ela_event_source *src,
-                          evutil_socket_t fd, uint32_t mask, void *data)
+_endpoint_handle_incoming(evutil_socket_t fd, short flags, void *data)
 {
     struct rudp_endpoint *endpoint = data;
     struct rudp_packet_chain *pc = rudp_packet_chain_alloc(
@@ -114,24 +117,19 @@ rudp_error_t rudp_endpoint_bind(struct rudp_endpoint *endpoint)
         return e;
     }
 
-    ela_error_t eerr = ela_set_fd(
-        endpoint->rudp->el, endpoint->ela_source,
-        endpoint->socket_fd,
-        ELA_EVENT_READABLE);
+    endpoint->ev = event_new(endpoint->rudp->eb, endpoint->socket_fd,
+            EV_PERSIST|EV_READ, _endpoint_handle_incoming, endpoint);
+    if (endpoint->ev == NULL) {
+        rudp_endpoint_close(endpoint);
+        return ENOMEM;
+    }
 
-    if ( eerr )
-        goto ela_err;
-
-    eerr = ela_add(endpoint->rudp->el, endpoint->ela_source);
-
-    if ( eerr )
-        goto ela_err;
+    if (event_add(endpoint->ev, NULL) == -1) {
+        rudp_endpoint_close(endpoint);
+        return ECANCELED;
+    }
 
     return 0;
-
-ela_err:
-    rudp_endpoint_close(endpoint);
-    return rudp_error_from_ela(eerr);
 }
 
 
@@ -141,8 +139,10 @@ rudp_endpoint_close(struct rudp_endpoint *endpoint)
     if (endpoint == NULL)
         return;
 
-    if (endpoint->rudp != NULL)
-        ela_remove(endpoint->rudp->el, endpoint->ela_source);
+    if (endpoint->ev != NULL) {
+        event_free(endpoint->ev);
+        endpoint->ev = NULL;
+    }
 
     evutil_closesocket(endpoint->socket_fd);
     endpoint->socket_fd = RUDP_INVALID_SOCKET;

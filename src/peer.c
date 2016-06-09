@@ -14,11 +14,11 @@
 #ifndef _MSC_VER
 # include <sys/time.h>
 #endif
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
-#include <event2/util.h>
+#include <event2/event.h>
 
 #include <rudp/endpoint.h>
 #include <rudp/rudp.h>
@@ -36,8 +36,7 @@ static rudp_error_t peer_send_raw(
 static int peer_handle_ack(struct rudp_peer *peer, uint16_t ack);
 
 static void peer_service(struct rudp_peer *peer);
-static void _peer_service(struct ela_event_source *src,
-                          evutil_socket_t fd, uint32_t mask, void *data);
+static void _peer_service(evutil_socket_t fd, short flags, void *arg);
 static void peer_service_schedule(struct rudp_peer *peer);
 static void rudp_peer_handle_segment(
     struct rudp_peer *peer,
@@ -73,9 +72,7 @@ rudp_peer_reset(struct rudp_peer *peer)
         }
     }
 
-    if (peer->scheduled)
-        ela_remove(peer->rudp->el, peer->service_source);
-    peer->scheduled = 0;
+    evtimer_del(peer->ev);
 
     peer->abs_timeout_deadline = rudp_timestamp() + DROP_TIMEOUT;
     peer->in_seq_reliable = (uint16_t)-1;
@@ -104,8 +101,7 @@ void rudp_peer_init(
     peer->endpoint = endpoint;
     peer->rudp = rudp;
     peer->handler = handler;
-    ela_source_alloc(rudp->el, _peer_service, peer, &peer->service_source);
-    peer->scheduled = 0;
+    peer->ev = evtimer_new(rudp->eb, _peer_service, peer);
 
     rudp_peer_reset(peer);
 
@@ -124,9 +120,9 @@ rudp_peer_deinit(struct rudp_peer *peer)
         rudp_packet_chain_free(peer->rudp,peer->segments);
 
     /* Avoid SEGFAULT in case rudp_peer_deinit() is called more than once. */
-    if (peer->service_source != NULL) {
-        ela_source_free(peer->rudp->el, peer->service_source);
-        peer->service_source = NULL;
+    if (peer->ev != NULL) {
+        event_free(peer->ev);
+        peer->ev = NULL;
     }
 }
 
@@ -285,7 +281,8 @@ void peer_handle_pong(
     peer_update_rtt(peer, delta);
 }
 
-static void peer_service_schedule(struct rudp_peer *peer)
+static void
+peer_service_schedule(struct rudp_peer *peer)
 {
     // If nothing in sendq: reschedule service for later
     rudp_time_t delta = ACTION_TIMEOUT;
@@ -323,9 +320,7 @@ static void peer_service_schedule(struct rudp_peer *peer)
     struct timeval tv;
     rudp_timestamp_to_timeval(&tv, delta);
 
-    ela_set_timeout(peer->rudp->el, peer->service_source, &tv, ELA_EVENT_ONCE);
-    ela_add(peer->rudp->el, peer->service_source);
-    peer->scheduled = 1;
+    evtimer_add(peer->ev, &tv);
 }
 
 static
@@ -775,20 +770,21 @@ rudp_error_t
 rudp_peer_send_close_noqueue(struct rudp_peer *peer)
 {
     struct rudp_packet_header header = {
+        .version = RUDP_VERSION,
         .command = RUDP_CMD_CLOSE,
         .opt = 0,
-        .version = RUDP_VERSION
+        .reliable_ack = 0,
     };
-
 
     if (peer == NULL)
         return EINVAL;
 
-    header.opt = 0;
+    memset(&header, 0, sizeof(header));
+
     header.reliable = htons(peer->out_seq_reliable);
     header.unreliable = htons(++(peer->out_seq_unreliable));
-    header.segment_index = htons(0);
     header.segments_size = htons(1);
+    header.segment_index = htons(0);
 
     rudp_log_printf(peer->rudp, RUDP_LOG_IO,
                     ">>> outgoing noqueue %s (%d) %04x:%04x\n",
@@ -859,8 +855,6 @@ static void peer_send_queue(struct rudp_peer *peer)
  */
 static void peer_service(struct rudp_peer *peer)
 {
-    peer->scheduled = 0;
-
     if ( peer->abs_timeout_deadline < rudp_timestamp() ) {
         peer->handler->dropped(peer);
         return;
@@ -881,10 +875,9 @@ static void peer_service(struct rudp_peer *peer)
     peer_service_schedule(peer);
 }
 
-static void _peer_service(struct ela_event_source *src,
-                          evutil_socket_t fd, uint32_t mask, void *data)
+static void _peer_service(evutil_socket_t fd, short flags, void *arg)
 {
-    peer_service((struct rudp_peer *)data);
+    peer_service((struct rudp_peer *)arg);
 }
 
 int rudp_peer_address_compare(const struct rudp_peer *peer,

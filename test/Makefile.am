@@ -1,4 +1,3 @@
-
 bin_PROGRAMS = test-server test-client
 
 test_server_SOURCES = test-server.c verbose.c

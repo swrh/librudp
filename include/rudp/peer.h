@@ -122,12 +122,11 @@ struct rudp_peer
     uint16_t out_seq_unreliable;
     uint16_t out_seq_acked;
     uint8_t must_ack:1;
-    uint8_t scheduled:1;
     uint8_t state;
     struct rudp_list sendq;
     struct rudp_packet_chain *segments;
     struct rudp *rudp;
-    struct ela_event_source *service_source;
+    struct event *ev;
     rudp_error_t sendto_err;
 };
 
