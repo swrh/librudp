@@ -144,8 +144,10 @@ rudp_endpoint_close(struct rudp_endpoint *endpoint)
         endpoint->ev = NULL;
     }
 
-    evutil_closesocket(endpoint->socket_fd);
-    endpoint->socket_fd = RUDP_INVALID_SOCKET;
+    if (endpoint->socket_fd != RUDP_INVALID_SOCKET) {
+        evutil_closesocket(endpoint->socket_fd);
+        endpoint->socket_fd = RUDP_INVALID_SOCKET;
+    }
 }
 
 rudp_error_t rudp_endpoint_recv(struct rudp_endpoint *endpoint,
