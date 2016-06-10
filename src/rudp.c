@@ -83,7 +83,7 @@ void
 rudp_free(struct rudp *rudp)
 {
     if (rudp != NULL)
-        rudp->handler.mem_free(rudp, rudp);
+        rudp_mem_free(rudp, rudp);
 }
 
 uint16_t rudp_random(void)

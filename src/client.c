@@ -9,13 +9,16 @@
   See AUTHORS for details
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 #include <inttypes.h>
-#include <rudp/packet.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <rudp/client.h>
+#include <rudp/packet.h>
 #include <rudp/peer.h>
+#include <rudp/rudp.h>
+
 #include "rudp_list.h"
 #include "rudp_packet.h"
 
@@ -39,7 +42,7 @@ rudp_client_new(struct rudp *rudp, const struct rudp_client_handler *handler,
 {
     struct rudp_client *client;
 
-    client = rudp->handler.mem_alloc(rudp, sizeof(struct rudp_client));
+    client = rudp_mem_alloc(rudp, sizeof(struct rudp_client));
     if (client != NULL)
         rudp_client_init(client, rudp, handler, arg);
     return client;
@@ -94,7 +97,7 @@ rudp_client_free(struct rudp_client *client)
     if (client == NULL)
         return;
     rudp_client_deinit(client);
-    client->rudp->handler.mem_free(client->rudp, client);
+    rudp_mem_free(client->rudp, client);
 }
 
 static
