@@ -150,6 +150,11 @@ void rudp_peer_init(
     const struct rudp_peer_handler *handler,
     struct rudp_endpoint *endpoint);
 
+RUDP_EXPORT
+struct rudp_peer *rudp_peer_new(struct rudp *rudp,
+        const struct rudp_peer_handler *handler,
+        struct rudp_endpoint *endpoint);
+
 /**
    @this initializes a peer structure knowning its remote
    address. This function is an alternative to calling @ref
@@ -177,6 +182,9 @@ void rudp_peer_from_sockaddr(
  */
 RUDP_EXPORT
 void rudp_peer_deinit(struct rudp_peer *peer);
+
+RUDP_EXPORT
+void rudp_peer_free(struct rudp_peer *peer);
 
 /**
    @this resets a peer context.

@@ -20,10 +20,11 @@
 
 #include <event2/event.h>
 
-#include <rudp/endpoint.h>
-#include <rudp/rudp.h>
 #include <rudp/address.h>
+#include <rudp/endpoint.h>
 #include <rudp/peer.h>
+#include <rudp/rudp.h>
+
 #include "rudp_list.h"
 #include "rudp_packet.h"
 
@@ -108,6 +109,18 @@ void rudp_peer_init(
     peer_service_schedule(peer);
 }
 
+struct rudp_peer *
+rudp_peer_new(struct rudp *rudp, const struct rudp_peer_handler *handler,
+        struct rudp_endpoint *endpoint)
+{
+    struct rudp_peer *peer;
+
+    peer = rudp_mem_alloc(rudp, sizeof(struct rudp_peer));
+    if (peer != NULL)
+        rudp_peer_init(peer, rudp, handler, endpoint);
+    return peer;
+}
+
 void
 rudp_peer_deinit(struct rudp_peer *peer)
 {
@@ -124,6 +137,15 @@ rudp_peer_deinit(struct rudp_peer *peer)
         event_free(peer->ev);
         peer->ev = NULL;
     }
+}
+
+void
+rudp_peer_free(struct rudp_peer *peer)
+{
+    if (peer == NULL)
+        return;
+    rudp_peer_deinit(peer);
+    rudp_mem_free(peer->rudp, peer);
 }
 
 static void peer_update_rtt(struct rudp_peer *peer, rudp_time_t last_rtt)
