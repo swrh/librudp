@@ -100,7 +100,7 @@ void rudp_peer_init(
     rudp_address_init(&peer->address, rudp);
     peer->endpoint = endpoint;
     peer->rudp = rudp;
-    peer->handler = handler;
+    peer->handler = *handler;
     peer->ev = evtimer_new(rudp->eb, _peer_service, peer);
 
     rudp_peer_reset(peer);
@@ -367,7 +367,7 @@ static void rudp_peer_handle_segment(
     header_copy.segments_size = ntohs(header_copy.segments_size);
 
     if(header_copy.segments_size == 1){
-        peer->handler->handle_packet(peer,pc);
+        peer->handler.handle_packet(peer,pc);
         return;
     }
 
@@ -385,7 +385,7 @@ static void rudp_peer_handle_segment(
 
     if(header_copy.segment_index + 1 == header_copy.segments_size){
         peer->segments->len+=sizeof(*header);
-        peer->handler->handle_packet(peer,peer->segments);
+        peer->handler.handle_packet(peer,peer->segments);
 
         rudp_packet_chain_free(peer->rudp,peer->segments); //9562
         peer->segments=NULL;
@@ -468,7 +468,7 @@ rudp_error_t rudp_peer_incoming_packet(
              * handler (server). */
             rudp = peer->rudp;
             peer->state = PEER_DEAD;
-            peer->handler->dropped(peer);
+            peer->handler.dropped(peer);
             rudp_log_printf(rudp, RUDP_LOG_INFO,
                             "      peer dropped\n");
             return 0;
@@ -574,7 +574,7 @@ int peer_handle_ack(struct rudp_peer *peer, uint16_t ack)
             break;
 
         link_info.acked = seqno;
-        peer->handler->link_info(peer, &link_info);
+        peer->handler.link_info(peer, &link_info);
 
         rudp_list_remove(&pc->chain_item);
         rudp_packet_chain_free(peer->rudp, pc);
@@ -856,7 +856,7 @@ static void peer_send_queue(struct rudp_peer *peer)
 static void peer_service(struct rudp_peer *peer)
 {
     if ( peer->abs_timeout_deadline < rudp_timestamp() ) {
-        peer->handler->dropped(peer);
+        peer->handler.dropped(peer);
         return;
     }
 

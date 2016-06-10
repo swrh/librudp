@@ -156,7 +156,7 @@ struct rudp_client_handler
  */
 struct rudp_client
 {
-    const struct rudp_client_handler *handler;
+    struct rudp_client_handler handler;
     struct rudp_peer peer;
     struct rudp_endpoint endpoint;
     struct rudp_address address;

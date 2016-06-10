@@ -30,7 +30,7 @@ rudp_error_t rudp_client_init(
     rudp_endpoint_init(&client->endpoint, rudp, &client_endpoint_handler);
     rudp_address_init(&client->address, rudp);
     client->rudp = rudp;
-    client->handler = handler;
+    client->handler = *handler;
     client->connected = 0;
     return 0;
 }
@@ -86,7 +86,7 @@ void client_handle_data_packet(
     struct rudp_client *client = __container_of(peer, struct rudp_client *, peer);
     struct rudp_packet_data *header = &pc->packet->data;
 
-    client->handler->handle_packet(
+    client->handler.handle_packet(
         client, header->header.command - RUDP_CMD_APP,
         header->data, pc->len - sizeof(header->header));
 }
@@ -96,7 +96,7 @@ void client_link_info(struct rudp_peer *peer, struct rudp_link_info *info)
 {
     struct rudp_client *client = __container_of(peer, struct rudp_client *, peer);
 
-    client->handler->link_info(client, info);
+    client->handler.link_info(client, info);
 }
 
 static
@@ -110,7 +110,7 @@ void client_peer_dropped(struct rudp_peer *peer)
 
     rudp_endpoint_close(&client->endpoint);
 
-    client->handler->server_lost(client);
+    client->handler.server_lost(client);
 }
 
 static const struct rudp_peer_handler client_peer_handler = {
@@ -139,7 +139,7 @@ void client_handle_endpoint_packet(struct rudp_endpoint *endpoint,
     if ( err == 0 && client->connected == 0 )
     {
         client->connected = 1;
-        client->handler->connected(client);
+        client->handler.connected(client);
     }
 }
 

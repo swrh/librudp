@@ -112,7 +112,7 @@ struct rudp_peer_handler
  */
 struct rudp_peer
 {
-    const struct rudp_peer_handler *handler;
+    struct rudp_peer_handler handler;
     struct rudp_address address;
     struct rudp_endpoint *endpoint;
     rudp_time_t abs_timeout_deadline;

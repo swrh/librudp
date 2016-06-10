@@ -20,13 +20,13 @@ void rudp_log_printf(
     const enum rudp_log_level level,
     const char *fmt, ...)
 {
-    if (rudp == NULL || rudp->handler->log == NULL)
+    if (rudp == NULL || rudp->handler.log == NULL)
         return;
 
     va_list arg;
     va_start(arg, fmt);
 
-    rudp->handler->log(rudp, level, fmt, arg);
+    rudp->handler.log(rudp, level, fmt, arg);
 
     va_end(arg);
 }
@@ -34,13 +34,13 @@ void rudp_log_printf(
 static __inline
 void *rudp_mem_alloc(struct rudp *rudp, size_t len)
 {
-    return rudp->handler->mem_alloc(rudp, len);
+    return rudp->handler.mem_alloc(rudp, len);
 }
 
 static __inline
 void rudp_mem_free(struct rudp *rudp, void *buffer)
 {
-    rudp->handler->mem_free(rudp, buffer);
+    rudp->handler.mem_free(rudp, buffer);
 }
 
 #endif

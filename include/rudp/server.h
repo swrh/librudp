@@ -163,7 +163,7 @@ struct rudp_server_handler
  */
 struct rudp_server
 {
-    const struct rudp_server_handler *handler;
+    struct rudp_server_handler handler;
     void *arg;
     struct rudp_list peer_list;
     struct rudp_endpoint endpoint;

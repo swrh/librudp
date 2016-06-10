@@ -25,7 +25,7 @@ void rudp_init(
     struct event_base *eb,
     const struct rudp_handler *handler)
 {
-    rudp->handler = handler;
+    rudp->handler = *handler;
     rudp->eb = eb;
 
     rudp_list_init(&rudp->free_packet_list);
@@ -83,7 +83,7 @@ void
 rudp_free(struct rudp *rudp)
 {
     if (rudp != NULL)
-        rudp->handler->mem_free(rudp, rudp);
+        rudp->handler.mem_free(rudp, rudp);
 }
 
 uint16_t rudp_random(void)

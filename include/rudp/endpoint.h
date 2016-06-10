@@ -79,7 +79,7 @@ struct rudp_endpoint_handler
  */
 struct rudp_endpoint
 {
-    const struct rudp_endpoint_handler *handler;
+    struct rudp_endpoint_handler handler;
     struct rudp_address addr;
     struct rudp *rudp;
     struct event *ev;

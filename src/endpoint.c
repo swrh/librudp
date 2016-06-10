@@ -40,7 +40,7 @@ void rudp_endpoint_init(
     rudp_address_init(&endpoint->addr, rudp);
     endpoint->socket_fd = RUDP_INVALID_SOCKET;
     endpoint->rudp = rudp;
-    endpoint->handler = handler;
+    endpoint->handler = *handler;
 
     endpoint->ev = NULL;
 }
@@ -74,7 +74,7 @@ _endpoint_handle_incoming(evutil_socket_t fd, short flags, void *data)
         endpoint, pc->packet, &pc->len, &addr);
 
     if (ret == 0)
-        endpoint->handler->handle_packet(endpoint, &addr, pc);
+        endpoint->handler.handle_packet(endpoint, &addr, pc);
 
     rudp_packet_chain_free(endpoint->rudp, pc);
 }

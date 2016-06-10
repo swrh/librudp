@@ -152,7 +152,7 @@ extern RUDP_EXPORT const struct rudp_handler rudp_handler_default;
  */
 struct rudp
 {
-    const struct rudp_handler *handler;
+    struct rudp_handler handler;
     struct event_base *eb;
     struct rudp_list free_packet_list;
     uint16_t allocated_packets;
