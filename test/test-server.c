@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
     event_free(ev);
 
-    display_err(  rudp_server_close(&server)  );
+    rudp_server_close(&server);
     rudp_server_deinit(&server);
 
     rudp_deinit(&rudp);

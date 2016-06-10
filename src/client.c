@@ -22,17 +22,26 @@
 static const struct rudp_endpoint_handler client_endpoint_handler;
 static const struct rudp_peer_handler client_peer_handler;
 
-rudp_error_t rudp_client_init(
-    struct rudp_client *client,
-    struct rudp *rudp,
-    const struct rudp_client_handler *handler)
+void
+rudp_client_init(struct rudp_client *client, struct rudp *rudp,
+        const struct rudp_client_handler *handler)
 {
     rudp_endpoint_init(&client->endpoint, rudp, &client_endpoint_handler);
     rudp_address_init(&client->address, rudp);
     client->rudp = rudp;
     client->handler = *handler;
     client->connected = 0;
-    return 0;
+}
+
+struct rudp_client *
+rudp_client_new(struct rudp *rudp, const struct rudp_client_handler *handler)
+{
+    struct rudp_client *client;
+
+    client = rudp->handler.mem_alloc(rudp, sizeof(struct rudp_client));
+    if (client != NULL)
+        rudp_client_init(client, rudp, handler);
+    return client;
 }
 
 rudp_error_t rudp_client_connect(struct rudp_client *client)
@@ -71,11 +80,20 @@ rudp_client_close(struct rudp_client *client)
     return 0;
 }
 
-rudp_error_t rudp_client_deinit(struct rudp_client *client)
+void
+rudp_client_deinit(struct rudp_client *client)
 {
     rudp_address_deinit(&client->address);
     rudp_endpoint_deinit(&client->endpoint);
-    return 0;
+}
+
+void
+rudp_client_free(struct rudp_client *client)
+{
+    if (client == NULL)
+        return;
+    rudp_client_deinit(client);
+    client->rudp->handler.mem_free(client->rudp, client);
 }
 
 static

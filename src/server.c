@@ -87,7 +87,8 @@ void rudp_server_client_close(struct rudp_server *server,
     server_peer_forget(server, peer);
 }
 
-rudp_error_t rudp_server_close(struct rudp_server *server)
+void
+rudp_server_close(struct rudp_server *server)
 {
     struct server_peer *peer, *tmp;
     rudp_list_for_each_safe(struct server_peer *, peer, tmp, &server->peer_list, server_item)
@@ -97,12 +98,12 @@ rudp_error_t rudp_server_close(struct rudp_server *server)
     }
 
     rudp_endpoint_close(&server->endpoint);
-    return 0;
 }
 
 void
 rudp_server_deinit(struct rudp_server *server)
 {
+    rudp_server_close(server);
     rudp_endpoint_deinit(&server->endpoint);
     rudp_list_init(&server->peer_list);
 }

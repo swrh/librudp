@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
     ev = event_new(eb, 0, EV_PERSIST|EV_READ, handle_stdin, &client);
 
-    display_err(  rudp_client_init(&client, &rudp, &handler) , 1);
+    rudp_client_init(&client, &rudp, &handler);
     rudp_client_set_hostname(&client, peer, 4242, 0);
     display_err(  rudp_client_connect(&client) , 1);
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
     event_free(ev);
 
     display_err(  rudp_client_close(&client) , 1);
-    display_err(  rudp_client_deinit(&client) , 1);
+    rudp_client_deinit(&client);
 
     rudp_deinit(&rudp);
     event_base_free(eb);

@@ -176,10 +176,14 @@ struct rudp_peer;
    @returns a possible error
  */
 RUDP_EXPORT
-rudp_error_t rudp_client_init(
+void rudp_client_init(
     struct rudp_client *client,
     struct rudp *rudp,
     const struct rudp_client_handler *handler);
+
+RUDP_EXPORT
+struct rudp_client *rudp_client_new(struct rudp *rudp,
+        const struct rudp_client_handler *handler);
 
 /**
    @this tries to establish a connection with the server.  Server
@@ -213,7 +217,10 @@ rudp_error_t rudp_client_close(struct rudp_client *client);
    @returns a possible error
  */
 RUDP_EXPORT
-rudp_error_t rudp_client_deinit(struct rudp_client *client);
+void rudp_client_deinit(struct rudp_client *client);
+
+RUDP_EXPORT
+void rudp_client_free(struct rudp_client *client);
 
 /**
    @this specifies a hostname to connect to.  Actual underlying address

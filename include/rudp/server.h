@@ -218,7 +218,7 @@ rudp_error_t rudp_server_bind(struct rudp_server *server);
    @returns a possible error
  */
 RUDP_EXPORT
-rudp_error_t rudp_server_close(struct rudp_server *server);
+void rudp_server_close(struct rudp_server *server);
 
 /**
    @this frees all internally allocated server data.
