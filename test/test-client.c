@@ -28,7 +28,7 @@
 
 static void
 handle_packet(struct rudp_client *client, int command, const void *data,
-        size_t len)
+        size_t len, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
     printf(">>> command %d, message '''", command);
@@ -39,13 +39,13 @@ handle_packet(struct rudp_client *client, int command, const void *data,
 }
 
 static void
-link_info(struct rudp_client *client, struct rudp_link_info *info)
+link_info(struct rudp_client *client, struct rudp_link_info *info, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
 
 static void
-server_lost(struct rudp_client *client)
+server_lost(struct rudp_client *client, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 
@@ -53,7 +53,7 @@ server_lost(struct rudp_client *client)
 }
 
 static void
-connected(struct rudp_client *client)
+connected(struct rudp_client *client, void *arg)
 {
     printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
 }
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
     ev = event_new(eb, 0, EV_PERSIST|EV_READ, handle_stdin, &client);
 
-    rudp_client_init(&client, &rudp, &handler);
+    rudp_client_init(&client, &rudp, &handler, NULL);
     rudp_client_set_hostname(&client, peer, 4242, 0);
     display_err(  rudp_client_connect(&client) , 1);
 

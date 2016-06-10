@@ -101,9 +101,8 @@ struct rudp_client_handler
        @param data Data buffer
        @param len Useful data length
      */
-    void (*handle_packet)(
-        struct rudp_client *client,
-        int command, const void *data, size_t len);
+    void (*handle_packet)(struct rudp_client *client, int command,
+            const void *data, size_t len, void *arg);
 
     /**
        @this is called anytime when link statistics are updated.
@@ -111,7 +110,8 @@ struct rudp_client_handler
        @param client Client context
        @param info Link quality updated information
      */
-    void (*link_info)(struct rudp_client *client, struct rudp_link_info *info);
+    void (*link_info)(struct rudp_client *client, struct rudp_link_info *info,
+            void *arg);
     /**
        @this is called when client gets connected.  When this handler
        is called, client is guaranteed to have established a valid
@@ -122,7 +122,7 @@ struct rudp_client_handler
 
        @param client Client context
      */
-    void (*connected)(struct rudp_client *client);
+    void (*connected)(struct rudp_client *client, void *arg);
 
     /**
        @this is called when connection to the server drops, either
@@ -135,7 +135,7 @@ struct rudp_client_handler
 
        @param client Client context
      */
-    void (*server_lost)(struct rudp_client *client);
+    void (*server_lost)(struct rudp_client *client, void *arg);
 };
 
 /**
@@ -157,6 +157,7 @@ struct rudp_client_handler
 struct rudp_client
 {
     struct rudp_client_handler handler;
+    void *arg;
     struct rudp_peer peer;
     struct rudp_endpoint endpoint;
     struct rudp_address address;
@@ -176,14 +177,12 @@ struct rudp_peer;
    @returns a possible error
  */
 RUDP_EXPORT
-void rudp_client_init(
-    struct rudp_client *client,
-    struct rudp *rudp,
-    const struct rudp_client_handler *handler);
+void rudp_client_init(struct rudp_client *client, struct rudp *rudp,
+        const struct rudp_client_handler *handler, void *arg);
 
 RUDP_EXPORT
 struct rudp_client *rudp_client_new(struct rudp *rudp,
-        const struct rudp_client_handler *handler);
+        const struct rudp_client_handler *handler, void *arg);
 
 /**
    @this tries to establish a connection with the server.  Server
