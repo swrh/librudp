@@ -43,7 +43,7 @@ PKG_CHECK_MODULES(LIBEVENT, [libevent >= 2.0.4])
 AC_FUNC_MALLOC
 
 AC_CONFIG_FILES([
-    rudp.pc
+    librudp.pc
     Makefile
     doc/Makefile
     include/Makefile

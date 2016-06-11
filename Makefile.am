@@ -5,4 +5,4 @@ noinst_DATA = ChangeLog
 SUBDIRS = include src test doc
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = rudp.pc
+pkgconfig_DATA = librudp.pc

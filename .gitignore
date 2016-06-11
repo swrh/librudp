@@ -27,7 +27,7 @@ test/Makefile
 test/test-client
 test/test-server
 src/Makefile
-rudp.pc
+librudp.pc
 config.log
 config.status
 *~
