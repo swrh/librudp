@@ -9,10 +9,11 @@
   See AUTHORS for details
  */
 
-#include <sys/socket.h>
+#include <err.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
-#include <netinet/in.h>
+#include <sys/socket.h>
 
 #include <event2/event.h>
 
