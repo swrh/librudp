@@ -35,7 +35,7 @@ const char *rudp_command_name(enum rudp_command cmd)
 #define FREE_PACKET_POOL 10
 
 struct rudp_packet_chain *rudp_packet_chain_alloc(
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     size_t asked)
 {
     size_t alloc = asked;
@@ -67,7 +67,7 @@ found:
     return pc;
 }
 
-void rudp_packet_chain_free(struct rudp *rudp, struct rudp_packet_chain *pc)
+void rudp_packet_chain_free(struct rudp_base *rudp, struct rudp_packet_chain *pc)
 {
     if ( pc->alloc_size == DEFAULT_ALLOC_SIZE ) {
         rudp_list_insert(&rudp->free_packet_list, &pc->chain_item);

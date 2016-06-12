@@ -21,11 +21,11 @@
 #define RUDP_RECV_BUFFER_SIZE 4096
 
 struct rudp_packet_chain *rudp_packet_chain_alloc(
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     size_t alloc);
 
 void rudp_packet_chain_free(
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     struct rudp_packet_chain *pc);
 
 #endif

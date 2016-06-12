@@ -26,7 +26,7 @@ static const struct rudp_endpoint_handler client_endpoint_handler;
 static const struct rudp_peer_handler client_peer_handler;
 
 void
-rudp_client_init(struct rudp_client *client, struct rudp *rudp,
+rudp_client_init(struct rudp_client *client, struct rudp_base *rudp,
         const struct rudp_client_handler *handler, void *arg)
 {
     rudp_endpoint_init(&client->endpoint, rudp, &client_endpoint_handler);
@@ -37,7 +37,7 @@ rudp_client_init(struct rudp_client *client, struct rudp *rudp,
 }
 
 struct rudp_client *
-rudp_client_new(struct rudp *rudp, const struct rudp_client_handler *handler,
+rudp_client_new(struct rudp_base *rudp, const struct rudp_client_handler *handler,
         void *arg)
 {
     struct rudp_client *client;

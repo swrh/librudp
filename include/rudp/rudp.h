@@ -50,7 +50,7 @@
 
    Sample usage:
    @code
-    struct rudp rudp;
+    struct rudp_base rudp;
     struct event_base *eb = ...;
 
     rudp_init(&rudp, eb, RUDP_HANDLER_DEFAULT);
@@ -90,7 +90,7 @@ enum rudp_log_level
     RUDP_LOG_ERROR,
 };
 
-struct rudp;
+struct rudp_base;
 
 /**
    Master state handler code callbacks
@@ -110,7 +110,7 @@ struct rudp_handler
        @param arg Argument list
      */
     void (*log)(
-        struct rudp *rudp,
+        struct rudp_base *rudp,
         enum rudp_log_level level, const char *fmt, va_list arg);
 
     /**
@@ -120,7 +120,7 @@ struct rudp_handler
        @param size Size of buffer needed
        @returns A newly allocated buffer, or NULL
      */
-    void *(*mem_alloc)(struct rudp *rudp, size_t size);
+    void *(*mem_alloc)(struct rudp_base *rudp, size_t size);
 
     /**
        @this is called each time the library frees a previously
@@ -129,7 +129,7 @@ struct rudp_handler
        @param rudp The rudp context
        @param buffer Previously allocated buffer to release
      */
-    void (*mem_free)(struct rudp *rudp, void *buffer);
+    void (*mem_free)(struct rudp_base *rudp, void *buffer);
 };
 
 extern RUDP_EXPORT const struct rudp_handler rudp_handler_default;
@@ -150,7 +150,7 @@ extern RUDP_EXPORT const struct rudp_handler rudp_handler_default;
 
    @hidecontent
  */
-struct rudp
+struct rudp_base
 {
     struct rudp_handler handler;
     struct event_base *eb;
@@ -169,7 +169,7 @@ struct rudp
  */
 RUDP_EXPORT
 void rudp_init(
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     struct event_base *eb,
     const struct rudp_handler *handler);
 
@@ -179,15 +179,15 @@ void rudp_init(
    @param rudp Rudp context to deinitialize
  */
 RUDP_EXPORT
-void rudp_deinit(struct rudp *rudp);
+void rudp_deinit(struct rudp_base *rudp);
 
 RUDP_EXPORT
-struct rudp *rudp_new(
+struct rudp_base *rudp_new(
     struct event_base *eb,
     const struct rudp_handler *handler);
 
 RUDP_EXPORT
-void rudp_free(struct rudp *rudp);
+void rudp_free(struct rudp_base *rudp);
 
 /**
    @this generates a 16 bit random value

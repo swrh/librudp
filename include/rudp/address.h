@@ -77,7 +77,7 @@ extern "C" {
 struct rudp_address
 {
     /** Rudp context */
-    struct rudp *rudp;
+    struct rudp_base *rudp;
     /** Low-level address structure */
     struct sockaddr_storage *addr;
     /** High_level address structure */
@@ -214,7 +214,7 @@ rudp_error_t rudp_address_set(
    @param rudp A valid rudp context
  */
 RUDP_EXPORT
-void rudp_address_init(struct rudp_address *addr, struct rudp *rudp);
+void rudp_address_init(struct rudp_address *addr, struct rudp_base *rudp);
 
 /**
    @this releases all data internally referenced by an address

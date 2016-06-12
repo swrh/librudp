@@ -51,7 +51,7 @@
    Sample usage:
    @code
     // assuming you have a valid rudp context here:
-    struct rudp *rudp;
+    struct rudp_base *rudp;
 
     struct rudp_client client;
 
@@ -161,7 +161,7 @@ struct rudp_client
     struct rudp_peer peer;
     struct rudp_endpoint endpoint;
     struct rudp_address address;
-    struct rudp *rudp;
+    struct rudp_base *rudp;
     char connected;
 };
 
@@ -177,11 +177,11 @@ struct rudp_peer;
    @returns a possible error
  */
 RUDP_EXPORT
-void rudp_client_init(struct rudp_client *client, struct rudp *rudp,
+void rudp_client_init(struct rudp_client *client, struct rudp_base *rudp,
         const struct rudp_client_handler *handler, void *arg);
 
 RUDP_EXPORT
-struct rudp_client *rudp_client_new(struct rudp *rudp,
+struct rudp_client *rudp_client_new(struct rudp_base *rudp,
         const struct rudp_client_handler *handler, void *arg);
 
 /**

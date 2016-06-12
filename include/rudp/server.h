@@ -50,7 +50,7 @@
    Sample usage:
    @code
     // assuming you have a valid rudp context here:
-    struct rudp *rudp;
+    struct rudp_base *rudp;
 
     struct rudp_server server;
 
@@ -167,7 +167,7 @@ struct rudp_server
     void *arg;
     struct rudp_list peer_list;
     struct rudp_endpoint endpoint;
-    struct rudp *rudp;
+    struct rudp_base *rudp;
 };
 
 struct rudp_peer;
@@ -184,13 +184,13 @@ struct rudp_peer;
 RUDP_EXPORT
 void rudp_server_init(
     struct rudp_server *server,
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct rudp_server_handler *handler,
     void *arg);
 
 RUDP_EXPORT
 struct rudp_server *rudp_server_new(
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct rudp_server_handler *handler,
     void *arg);
 

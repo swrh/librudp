@@ -92,7 +92,7 @@ rudp_peer_reset(struct rudp_peer *peer)
 
 void rudp_peer_init(
     struct rudp_peer *peer,
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct rudp_peer_handler *handler,
     struct rudp_endpoint *endpoint)
 {
@@ -110,7 +110,7 @@ void rudp_peer_init(
 }
 
 struct rudp_peer *
-rudp_peer_new(struct rudp *rudp, const struct rudp_peer_handler *handler,
+rudp_peer_new(struct rudp_base *rudp, const struct rudp_peer_handler *handler,
         struct rudp_endpoint *endpoint)
 {
     struct rudp_peer *peer;
@@ -174,7 +174,7 @@ static void peer_rto_backoff(struct rudp_peer *peer)
 
 void rudp_peer_from_sockaddr(
     struct rudp_peer *peer,
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct sockaddr_storage *addr,
     const struct rudp_peer_handler *handler,
     struct rudp_endpoint *endpoint)
@@ -424,7 +424,7 @@ rudp_error_t rudp_peer_incoming_packet(
     struct rudp_peer *peer, struct rudp_packet_chain *pc)
 {
     const struct rudp_packet_header *header = &pc->packet->header;
-    struct rudp *rudp;
+    struct rudp_base *rudp;
 
     rudp_log_printf(peer->rudp, RUDP_LOG_IO,
                     "<<< incoming [%d] %s %s (%d) %04x:%04x\n",

@@ -84,7 +84,7 @@ int main(int argc, char **argv)
     struct rudp_client client;
     struct event_base *eb = event_base_new();
     struct event *ev;
-    struct rudp rudp;
+    struct rudp_base rudp;
     const struct rudp_handler *my_handler = RUDP_HANDLER_DEFAULT;
     const char *peer = "127.0.0.1";
     int peer_no = 1;

@@ -15,7 +15,7 @@
 #include <rudp/rudp.h>
 
 static
-void *_rudp_default_alloc(struct rudp *rudp, size_t len)
+void *_rudp_default_alloc(struct rudp_base *rudp, size_t len)
 {
     void *b = malloc(len);
     printf("%s: %d bytes allocated at %p\n",
@@ -24,7 +24,7 @@ void *_rudp_default_alloc(struct rudp *rudp, size_t len)
 }
 
 static
-void _rudp_default_free(struct rudp *rudp, void *buffer)
+void _rudp_default_free(struct rudp_base *rudp, void *buffer)
 {
     printf("%s: freed buffer at %p\n",
            __FUNCTION__, buffer);
@@ -32,7 +32,7 @@ void _rudp_default_free(struct rudp *rudp, void *buffer)
 }
 
 static
-void _rudp_log(struct rudp *rudp,
+void _rudp_log(struct rudp_base *rudp,
                enum rudp_log_level level,
                const char *fmt,
                va_list arg)

@@ -81,7 +81,7 @@ struct rudp_endpoint
 {
     struct rudp_endpoint_handler handler;
     struct rudp_address addr;
-    struct rudp *rudp;
+    struct rudp_base *rudp;
     struct event *ev;
     evutil_socket_t socket_fd;
 };
@@ -96,7 +96,7 @@ struct rudp_endpoint
 RUDP_EXPORT
 void rudp_endpoint_init(
     struct rudp_endpoint *endpoint,
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct rudp_endpoint_handler *handler);
 
 /**

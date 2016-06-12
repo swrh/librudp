@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     struct in_addr address;
     struct event_base *eb = event_base_new();
     struct event *ev;
-    struct rudp rudp;
+    struct rudp_base rudp;
     const struct rudp_handler *my_handler = RUDP_HANDLER_DEFAULT;
 
     if ( argc > 1 && !strcmp(argv[1], "-v") )

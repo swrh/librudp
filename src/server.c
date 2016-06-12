@@ -34,7 +34,7 @@ struct server_peer
 static const struct rudp_endpoint_handler server_endpoint_handler;
 
 void
-rudp_server_init(struct rudp_server *server, struct rudp *rudp,
+rudp_server_init(struct rudp_server *server, struct rudp_base *rudp,
         const struct rudp_server_handler *handler, void *arg)
 {
     rudp_endpoint_init(&server->endpoint, rudp, &server_endpoint_handler);
@@ -45,7 +45,7 @@ rudp_server_init(struct rudp_server *server, struct rudp *rudp,
 }
 
 struct rudp_server *
-rudp_server_new(struct rudp *rudp, const struct rudp_server_handler *handler, void *arg)
+rudp_server_new(struct rudp_base *rudp, const struct rudp_server_handler *handler, void *arg)
 {
     struct rudp_server *server = rudp_mem_alloc(rudp, sizeof(struct rudp_server));
 

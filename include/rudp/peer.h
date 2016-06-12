@@ -129,7 +129,7 @@ struct rudp_peer
     uint8_t state;
     struct rudp_list sendq;
     struct rudp_packet_chain *segments;
-    struct rudp *rudp;
+    struct rudp_base *rudp;
     struct event *ev;
     rudp_error_t sendto_err;
 };
@@ -146,12 +146,12 @@ struct rudp_peer
 RUDP_EXPORT
 void rudp_peer_init(
     struct rudp_peer *peer,
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct rudp_peer_handler *handler,
     struct rudp_endpoint *endpoint);
 
 RUDP_EXPORT
-struct rudp_peer *rudp_peer_new(struct rudp *rudp,
+struct rudp_peer *rudp_peer_new(struct rudp_base *rudp,
         const struct rudp_peer_handler *handler,
         struct rudp_endpoint *endpoint);
 
@@ -170,7 +170,7 @@ struct rudp_peer *rudp_peer_new(struct rudp *rudp,
 RUDP_EXPORT
 void rudp_peer_from_sockaddr(
     struct rudp_peer *peer,
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct sockaddr_storage *addr,
     const struct rudp_peer_handler *handler,
     struct rudp_endpoint *endpoint);

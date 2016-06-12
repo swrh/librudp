@@ -34,7 +34,7 @@ static void _endpoint_handle_incoming(evutil_socket_t fd, short flags,
 
 void rudp_endpoint_init(
     struct rudp_endpoint *endpoint,
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     const struct rudp_endpoint_handler *handler)
 {
     rudp_address_init(&endpoint->addr, rudp);

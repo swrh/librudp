@@ -21,7 +21,7 @@
 #include "rudp_rudp.h"
 
 void rudp_init(
-    struct rudp *rudp,
+    struct rudp_base *rudp,
     struct event_base *eb,
     const struct rudp_handler *handler)
 {
@@ -34,13 +34,13 @@ void rudp_init(
 }
 
 static
-void *_rudp_default_alloc(struct rudp *rudp, size_t len)
+void *_rudp_default_alloc(struct rudp_base *rudp, size_t len)
 {
     return calloc(1, len);
 }
 
 static
-void _rudp_default_free(struct rudp *rudp, void *buffer)
+void _rudp_default_free(struct rudp_base *rudp, void *buffer)
 {
     free(buffer);
 }
@@ -53,7 +53,7 @@ const struct rudp_handler rudp_handler_default =
     .mem_free = _rudp_default_free,
 };
 
-void rudp_deinit(struct rudp *rudp)
+void rudp_deinit(struct rudp_base *rudp)
 {
     struct rudp_packet_chain *pc, *tmp;
     rudp_list_for_each_safe(struct rudp_packet_chain *, pc, tmp, &rudp->free_packet_list, chain_item) {
@@ -62,15 +62,15 @@ void rudp_deinit(struct rudp *rudp)
     }
 }
 
-struct rudp *
+struct rudp_base *
 rudp_new(struct event_base *eb, const struct rudp_handler *handler)
 {
-    struct rudp *rudp;
+    struct rudp_base *rudp;
 
     if (handler == NULL)
         handler = &rudp_handler_default;
 
-    rudp = handler->mem_alloc(NULL, sizeof(struct rudp));
+    rudp = handler->mem_alloc(NULL, sizeof(struct rudp_base));
     if (rudp == NULL)
         return NULL;
 
@@ -80,7 +80,7 @@ rudp_new(struct event_base *eb, const struct rudp_handler *handler)
 }
 
 void
-rudp_free(struct rudp *rudp)
+rudp_free(struct rudp_base *rudp)
 {
     if (rudp != NULL)
         rudp_mem_free(rudp, rudp);

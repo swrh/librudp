@@ -121,7 +121,7 @@ rudp_address_deinit(struct rudp_address *rua)
     rua->text[0] = 0;
 }
 
-void rudp_address_init(struct rudp_address *rua, struct rudp *rudp)
+void rudp_address_init(struct rudp_address *rua, struct rudp_base *rudp)
 {
     memset(rua, 0, sizeof(*rua));
     rua->text[0] = 0;
