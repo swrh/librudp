@@ -3,8 +3,8 @@ project(librudp C)
 
 set(RUDP_MAJOR_VERSION 0)
 set(RUDP_MINOR_VERSION 3)
-#set(RUDP_PATCH_VERSION 1)
-set(RUDP_VERSION ${RUDP_MAJOR_VERSION}.${RUDP_MINOR_VERSION})
+set(RUDP_PATCH_VERSION 1)
+set(RUDP_VERSION ${RUDP_MAJOR_VERSION}.${RUDP_MINOR_VERSION}.${RUDP_PATCH_VERSION})
 
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
