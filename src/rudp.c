@@ -82,8 +82,10 @@ rudp_new(struct event_base *eb, const struct rudp_handler *handler)
 void
 rudp_free(struct rudp_base *rudp)
 {
-    if (rudp != NULL)
-        rudp_mem_free(rudp, rudp);
+    if (rudp == NULL)
+        return;
+    rudp_deinit(rudp);
+    rudp_mem_free(rudp, rudp);
 }
 
 uint16_t rudp_random(void)
