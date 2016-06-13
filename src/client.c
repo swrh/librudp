@@ -71,17 +71,14 @@ rudp_error_t rudp_client_connect(struct rudp_client *client)
     return rudp_endpoint_bind(&client->endpoint);
 }
 
-rudp_error_t
+void
 rudp_client_close(struct rudp_client *client)
 {
     if (client == NULL)
-        return EINVAL;
-
+        return;
     rudp_peer_send_close_noqueue(&client->peer);
     rudp_peer_deinit(&client->peer);
     rudp_endpoint_close(&client->endpoint);
-
-    return 0;
 }
 
 void

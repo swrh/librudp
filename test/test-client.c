@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 
     event_free(ev);
 
-    display_err(  rudp_client_close(&client) , 1);
+    rudp_client_close(&client);
     rudp_client_deinit(&client);
 
     rudp_deinit(&rudp);
