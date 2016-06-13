@@ -73,7 +73,8 @@ rudp_peer_reset(struct rudp_peer *peer)
         }
     }
 
-    evtimer_del(peer->ev);
+    if (peer->ev != NULL)
+        evtimer_del(peer->ev);
 
     peer->abs_timeout_deadline = rudp_timestamp() + DROP_TIMEOUT;
     peer->in_seq_reliable = (uint16_t)-1;
