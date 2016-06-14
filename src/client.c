@@ -31,8 +31,9 @@ rudp_client_init(struct rudp_client *client, struct rudp_base *rudp,
 {
     rudp_endpoint_init(&client->endpoint, rudp, &client_endpoint_handler);
     rudp_address_init(&client->address, rudp);
-    client->rudp = rudp;
     client->handler = *handler;
+    client->arg = arg;
+    client->rudp = rudp;
     client->connected = 0;
 }
 
