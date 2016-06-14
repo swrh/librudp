@@ -783,8 +783,9 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer)
         peer->rudp, sizeof(struct rudp_packet_conn_req));
     struct rudp_packet_conn_req *conn_req = &pc->packet->conn_req;
 
+    memset(conn_req, 0, sizeof(struct rudp_packet_conn_req));
+
     conn_req->header.command = RUDP_CMD_CONN_REQ;
-    conn_req->data = 0;
 
     peer->state = PEER_CONNECTING;
 
