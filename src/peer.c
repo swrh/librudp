@@ -543,7 +543,7 @@ rudp_error_t rudp_peer_incoming_packet(
                         "       reliable packet, posting ack\n");
         peer_post_ack(peer);
     }
-    
+
     peer_service_schedule(peer);
 
     return 0;

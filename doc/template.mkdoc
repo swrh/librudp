@@ -39,7 +39,7 @@
 
   @ifsymtype {@id@} {module}
     @section e {Related headers}
-      @insert {header} {1} {@id@} compound_table 
+      @insert {header} {1} {@id@} compound_table
     @end section
   @end if
 
