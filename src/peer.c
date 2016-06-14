@@ -358,10 +358,9 @@ void peer_handle_connreq(
                                 sizeof(struct rudp_packet_conn_rsp));
     struct rudp_packet_conn_rsp *response = &pc->packet->conn_rsp;
 
+    memset(response, 0, sizeof(struct rudp_packet_conn_rsp));
     response->header.version = RUDP_VERSION;
     response->header.command = RUDP_CMD_CONN_RSP;
-    response->header.opt = 0;
-    response->header.segment_index = htons(0);
     response->header.segments_size = htons(1);
     response->accepted = htonl(1);
 
