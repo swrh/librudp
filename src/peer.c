@@ -343,6 +343,8 @@ peer_service_schedule(struct rudp_peer *peer)
     struct timeval tv;
     rudp_timestamp_to_timeval(&tv, delta);
 
+    /* Avoid double evtimer_add(). */
+    evtimer_del(peer->ev);
     evtimer_add(peer->ev, &tv);
 }
 
