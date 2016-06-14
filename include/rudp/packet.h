@@ -154,6 +154,7 @@ struct rudp_packet_header
     uint8_t version;
     uint8_t command;
     uint8_t opt;
+    uint8_t dummy;
     uint16_t reliable_ack;
     uint16_t reliable;
     uint16_t unreliable;

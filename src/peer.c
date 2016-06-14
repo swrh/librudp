@@ -794,22 +794,18 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer)
 rudp_error_t
 rudp_peer_send_close_noqueue(struct rudp_peer *peer)
 {
-    struct rudp_packet_header header = {
-        .version = RUDP_VERSION,
-        .command = RUDP_CMD_CLOSE,
-        .opt = 0,
-        .reliable_ack = 0,
-    };
+    struct rudp_packet_header header;
 
     if (peer == NULL)
         return EINVAL;
 
     memset(&header, 0, sizeof(header));
 
+    header.version = RUDP_VERSION;
+    header.command = RUDP_CMD_CLOSE;
     header.reliable = htons(peer->out_seq_reliable);
     header.unreliable = htons(++(peer->out_seq_unreliable));
     header.segments_size = htons(1);
-    header.segment_index = htons(0);
 
     rudp_log_printf(peer->rudp, RUDP_LOG_IO,
                     ">>> outgoing noqueue %s (%d) %04x:%04x\n",
