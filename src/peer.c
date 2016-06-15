@@ -202,9 +202,11 @@ enum packet_state peer_analyse_reliable(
         return RETRANSMITTED;
 
     if ( (uint16_t)(peer->in_seq_reliable + 1) != reliable_seq ) {
-        rudp_log_printf(peer->rudp, RUDP_LOG_WARN,
-                        "%s unsequenced last seq %04x packet %04x\n",
-                        __FUNCTION__, peer->in_seq_reliable, reliable_seq);
+        if (peer->state != PEER_NEW || peer->in_seq_reliable != (uint16_t)-1) {
+            rudp_log_printf(peer->rudp, RUDP_LOG_WARN,
+                            "%s unsequenced last seq %04x packet %04x\n",
+                            __FUNCTION__, peer->in_seq_reliable, reliable_seq);
+        }
         return UNSEQUENCED;
     }
 
