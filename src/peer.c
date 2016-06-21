@@ -662,6 +662,7 @@ rudp_error_t rudp_peer_send_unreliable(
 {
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = 0;
+    pc->packet->header.dummy = 0;
     pc->packet->header.segment_index = htons(0);
     pc->packet->header.segments_size = htons(1);
     pc->packet->header.reliable = htons(peer->out_seq_reliable);
@@ -688,6 +689,7 @@ rudp_error_t rudp_peer_send_unreliable_segments(
     for (i = 0; i < num_segments; i++) {
         pc[i]->packet->header.version = RUDP_VERSION;
         pc[i]->packet->header.opt = 0;
+        pc[i]->packet->header.dummy = 0;
         pc[i]->packet->header.reliable = 0 ;
         pc[i]->packet->header.unreliable = htons(++(peer->out_seq_unreliable));
         pc[i]->packet->header.segments_size = htons(num_segments);
@@ -715,6 +717,7 @@ rudp_error_t rudp_peer_send_reliable(
 {
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = RUDP_OPT_RELIABLE;
+    pc->packet->header.dummy = 0;
     pc->packet->header.segment_index = htons(0) ;
     pc->packet->header.segments_size = htons(1) ;
     pc->packet->header.reliable = htons(++(peer->out_seq_reliable));
@@ -742,6 +745,7 @@ rudp_error_t rudp_peer_send_reliable_segments(
     for (i = 0; i < num_segments; i++) {
         pc[i]->packet->header.version = RUDP_VERSION;
         pc[i]->packet->header.opt = RUDP_OPT_RELIABLE;
+        pc[i]->packet->header.dummy = 0;
         pc[i]->packet->header.reliable = htons(++(peer->out_seq_reliable));
         pc[i]->packet->header.unreliable = 0;
         pc[i]->packet->header.segments_size = htons(num_segments);
