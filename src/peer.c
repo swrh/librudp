@@ -641,12 +641,13 @@ void peer_post_ack(struct rudp_peer *peer)
 
     struct rudp_packet_chain *pc = rudp_packet_chain_alloc(
         peer->rudp, sizeof(struct rudp_packet_conn_rsp));
-    struct rudp_packet_header *header = &pc->packet->header;
+    struct rudp_packet_conn_rsp *packet = &pc->packet->conn_rsp;
 
     rudp_log_printf(peer->rudp, RUDP_LOG_DEBUG,
                     "%s pushing NOOP ACK\n", __FUNCTION__);
 
-    header->command = RUDP_CMD_NOOP;
+    packet->header.command = RUDP_CMD_NOOP;
+    packet->accepted = 0;
 
     rudp_peer_send_unreliable(peer, pc);
 
