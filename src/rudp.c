@@ -36,7 +36,7 @@ void rudp_init(
 static
 void *_rudp_default_alloc(struct rudp_base *rudp, size_t len)
 {
-    return calloc(1, len);
+    return malloc(len);
 }
 
 static
