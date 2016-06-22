@@ -86,6 +86,7 @@ void rudp_server_client_close(struct rudp_server *server,
 {
     struct server_peer *peer = (struct server_peer *)_peer;
 
+    rudp_peer_send_close_noqueue(&peer->base);
     server_peer_forget(server, peer);
 }
 
