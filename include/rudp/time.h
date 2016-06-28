@@ -27,6 +27,7 @@
    @ref rudp_timestamp and @ref rudp_timestamp_to_timeval.
 */
 
+#include <time.h>
 #include <stdint.h>
 #ifndef _MSC_VER
 # include <sys/time.h>
@@ -49,9 +50,18 @@ typedef int64_t rudp_time_t;
 static __inline
 rudp_time_t rudp_timestamp(void)
 {
+#if defined(_WIN32)
+    return (rudp_time_t)GetTickCount64();
+#elif defined(CLOCK_MONOTONIC)
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1)
+        return -1;
+    return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+#else
     struct timeval tv;
     evutil_gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+#endif
 }
 
 /**
