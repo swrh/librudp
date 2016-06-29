@@ -262,7 +262,7 @@ rudp_error_t rudp_client_set_addr(
    @param port Numeric target port (machine order)
  */
 RUDP_EXPORT
-void rudp_client_set_ipv4(
+rudp_error_t rudp_client_set_ipv4(
     struct rudp_client *client,
     const struct in_addr *address,
     const uint16_t port);
@@ -280,7 +280,7 @@ void rudp_client_set_ipv4(
    @param port Numeric target port (machine order)
  */
 RUDP_EXPORT
-void rudp_client_set_ipv6(
+rudp_error_t rudp_client_set_ipv6(
     struct rudp_client *client,
     const struct in6_addr *address,
     const uint16_t port) RUDP_DEPRECATED;

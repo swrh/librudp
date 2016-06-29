@@ -226,32 +226,42 @@ rudp_error_t rudp_client_set_hostname(
     const uint16_t port,
     uint32_t ip_flags)
 {
+    if (client == NULL || hostname == NULL || port <= 0)
+        return EINVAL;
+
     return rudp_address_set_hostname(&client->address,
                                       hostname, port, ip_flags);
 }
 
-void rudp_client_set_ipv4(
+rudp_error_t rudp_client_set_ipv4(
     struct rudp_client *client,
     const struct in_addr *address,
     const uint16_t port)
 {
+    if (client == NULL || address == NULL || port <= 0)
+        return EINVAL;
+
     rudp_address_set_ipv4(&client->address, address, port);
+
+    return 0;
 }
 
-void rudp_client_set_ipv6(
+rudp_error_t rudp_client_set_ipv6(
     struct rudp_client *client,
     const struct in6_addr *address,
     const uint16_t port)
 {
     struct sockaddr_in6 addr6;
 
+    if (client == NULL || address == NULL || port <= 0)
+        return EINVAL;
+
     memset(&addr6, 0, sizeof (addr6));
     addr6.sin6_family = AF_INET6;
     addr6.sin6_addr = *address;
     addr6.sin6_port = htons(port);
 
-    rudp_address_set(&client->address, (struct sockaddr *)&addr6,
-                     sizeof (addr6));
+    return rudp_address_set(&client->address, (struct sockaddr *)&addr6, sizeof(addr6));
 }
 
 rudp_error_t rudp_client_set_addr(
