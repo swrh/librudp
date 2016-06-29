@@ -370,8 +370,6 @@ void peer_handle_connreq(
                     "%s answering to connreq\n", __FUNCTION__);
 
     rudp_peer_send_unreliable(peer, pc);
-
-    peer_service_schedule(peer);
 }
 
 /*
@@ -650,8 +648,6 @@ void peer_post_ack(struct rudp_peer *peer)
     packet->accepted = 0;
 
     rudp_peer_send_unreliable(peer, pc);
-
-    peer_service_schedule(peer);
 }
 
 
