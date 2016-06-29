@@ -162,6 +162,7 @@ struct rudp_client
     struct rudp_endpoint endpoint;
     struct rudp_address address;
     struct rudp_base *rudp;
+    char peer_valid;
     char connected;
 };
 

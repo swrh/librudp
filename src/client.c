@@ -35,6 +35,7 @@ rudp_client_init(struct rudp_client *client, struct rudp_base *rudp,
     client->arg = arg;
     client->rudp = rudp;
     client->connected = 0;
+    client->peer_valid = 0;
 }
 
 struct rudp_client *
@@ -62,6 +63,7 @@ rudp_error_t rudp_client_connect(struct rudp_client *client)
     rudp_peer_from_sockaddr(&client->peer, client->rudp,
                             addr,
                             &client_peer_handler, &client->endpoint);
+    client->peer_valid = 1;
 
     rudp_peer_send_connect(&client->peer);
 
@@ -75,16 +77,18 @@ rudp_error_t rudp_client_connect(struct rudp_client *client)
 void
 rudp_client_close(struct rudp_client *client)
 {
-    if (client == NULL)
+    if (client == NULL || !client->peer_valid)
         return;
     rudp_peer_send_close_noqueue(&client->peer);
     rudp_peer_deinit(&client->peer);
+    client->peer_valid = 0;
     rudp_endpoint_close(&client->endpoint);
 }
 
 void
 rudp_client_deinit(struct rudp_client *client)
 {
+    rudp_client_close(client);
     rudp_address_deinit(&client->address);
     rudp_endpoint_deinit(&client->endpoint);
 }
@@ -127,7 +131,7 @@ void client_peer_dropped(struct rudp_peer *peer)
     client->connected = 0;
 
     rudp_peer_deinit(&client->peer);
-
+    client->peer_valid = 0;
     rudp_endpoint_close(&client->endpoint);
 
     client->handler.server_lost(client, client->arg);
