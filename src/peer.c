@@ -660,7 +660,7 @@ rudp_error_t rudp_peer_send_unreliable(
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = 0;
     pc->packet->header.dummy = 0;
-    pc->packet->header.segment_index = htons(0);
+    pc->packet->header.segment_index = 0;
     pc->packet->header.segments_size = htons(1);
     pc->packet->header.reliable = htons(peer->out_seq_reliable);
     pc->packet->header.unreliable = htons(++(peer->out_seq_unreliable));
@@ -673,6 +673,7 @@ rudp_error_t rudp_peer_send_unreliable(
                     ntohs(pc->packet->header.unreliable));
 
     rudp_list_append(&peer->sendq, &pc->chain_item);
+
     peer_service_schedule(peer);
     return peer->sendto_err;
 }
@@ -687,7 +688,7 @@ rudp_error_t rudp_peer_send_unreliable_segments(
         pc[i]->packet->header.version = RUDP_VERSION;
         pc[i]->packet->header.opt = 0;
         pc[i]->packet->header.dummy = 0;
-        pc[i]->packet->header.reliable = 0 ;
+        pc[i]->packet->header.reliable = htons(peer->out_seq_reliable);
         pc[i]->packet->header.unreliable = htons(++(peer->out_seq_unreliable));
         pc[i]->packet->header.segments_size = htons(num_segments);
         pc[i]->packet->header.segment_index = htons(i);
@@ -701,8 +702,6 @@ rudp_error_t rudp_peer_send_unreliable_segments(
 
         rudp_list_append(&peer->sendq, &pc[i]->chain_item);
     }
-    peer->out_seq_unreliable = 0;
-
 
     peer_service_schedule(peer);
     return peer->sendto_err;
@@ -715,11 +714,10 @@ rudp_error_t rudp_peer_send_reliable(
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = RUDP_OPT_RELIABLE;
     pc->packet->header.dummy = 0;
-    pc->packet->header.segment_index = htons(0) ;
-    pc->packet->header.segments_size = htons(1) ;
+    pc->packet->header.segment_index = 0;
+    pc->packet->header.segments_size = htons(1);
     pc->packet->header.reliable = htons(++(peer->out_seq_reliable));
     pc->packet->header.unreliable = 0;
-    peer->out_seq_unreliable = 0;
 
     rudp_log_printf(peer->rudp, RUDP_LOG_IO,
                     ">>> outgoing reliable %s (%d) %04x:%04x\n",
@@ -729,6 +727,8 @@ rudp_error_t rudp_peer_send_reliable(
                     ntohs(pc->packet->header.unreliable));
 
     rudp_list_append(&peer->sendq, &pc->chain_item);
+
+    peer->out_seq_unreliable = 0;
     peer_service_schedule(peer);
     return peer->sendto_err;
 }
@@ -757,9 +757,8 @@ rudp_error_t rudp_peer_send_reliable_segments(
 
         rudp_list_append(&peer->sendq, &pc[i]->chain_item);
     }
+
     peer->out_seq_unreliable = 0;
-
-
     peer_service_schedule(peer);
     return peer->sendto_err;
 }
