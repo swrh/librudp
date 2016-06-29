@@ -14,6 +14,9 @@
 
 #include <rudp/rudp.h>
 
+#define RUDP_MAX(x, y) ((x) > (y) ? (x) : (y))
+#define RUDP_MIN(x, y) ((x) < (y) ? (x) : (y))
+
 static __inline
 void rudp_log_printf(
     struct rudp_base *rudp,

@@ -130,10 +130,11 @@ rudp_peer_deinit(struct rudp_peer *peer)
 
     rudp_peer_reset(peer);
     rudp_address_deinit(&peer->address);
-    if(peer->segments)
-        rudp_packet_chain_free(peer->rudp,peer->segments);
 
-    /* Avoid SEGFAULT in case rudp_peer_deinit() is called more than once. */
+    if (peer->segments != NULL)
+        rudp_packet_chain_free(peer->rudp, peer->segments);
+    peer->segments = NULL;
+
     if (peer->ev != NULL) {
         event_free(peer->ev);
         peer->ev = NULL;
@@ -382,37 +383,37 @@ static void rudp_peer_handle_segment(
     const struct rudp_packet_header *header,
     struct rudp_packet_chain *pc)
 {
-    struct rudp_packet_header header_copy;//copy to modify it
-    size_t header_size = sizeof(header_copy);
+    uint16_t segments_size, segment_index;
 
-    memcpy(&header_copy,header,sizeof(*header));
+    segment_index = ntohs(header->segment_index);
+    segments_size = ntohs(header->segments_size);
 
-    header_copy.segment_index = ntohs(header_copy.segment_index);
-    header_copy.segments_size = ntohs(header_copy.segments_size);
-
-    if(header_copy.segments_size == 1){
-        peer->handler.handle_packet(peer,pc);
+    if (segments_size == 1) {
+        peer->handler.handle_packet(peer, pc);
         return;
     }
 
-    if(header_copy.segment_index == 0){//segments_size > 1
-        rudp_mem_free(peer->rudp,peer->segments);
-        peer->segments=rudp_packet_chain_alloc(peer->rudp,header_copy.segments_size*RUDP_RECV_BUFFER_SIZE);
-        peer->segments->len=0;
-        peer->segments->packet->header.opt = header_copy.opt; //uint8 no ntohx required
-        peer->segments->packet->header.command = header_copy.command; //uint8 no ntohx required
+    if (segment_index == 0) {
+        if (peer->segments != NULL)
+            rudp_mem_free(peer->rudp, peer->segments);
+
+        peer->segments = rudp_packet_chain_alloc(peer->rudp, segments_size * RUDP_RECV_BUFFER_SIZE);
+        peer->segments->len = 0;
+        peer->segments->packet->header.opt = header->opt;
+        peer->segments->packet->header.command = header->command;
     }
-    memcpy(&peer->segments->packet->data.data[0] + peer->segments->len, &pc->packet->data.data[0],
-            pc->len - header_size);
-    peer->segments->len+=pc->len-header_size;
 
+    memcpy(&peer->segments->packet->data.data[0] + peer->segments->len,
+            &pc->packet->data.data[0],
+            pc->len - sizeof(*header));
 
-    if(header_copy.segment_index + 1 == header_copy.segments_size){
-        peer->segments->len+=sizeof(*header);
-        peer->handler.handle_packet(peer,peer->segments);
+    peer->segments->len += pc->len - sizeof(*header);
 
-        rudp_packet_chain_free(peer->rudp,peer->segments); //9562
-        peer->segments=NULL;
+    if ((segment_index + 1) == segments_size) {
+        peer->segments->len += sizeof(*header);
+        peer->handler.handle_packet(peer, peer->segments);
+        rudp_packet_chain_free(peer->rudp, peer->segments);
+        peer->segments = NULL;
     }
 }
 
@@ -653,15 +654,15 @@ void peer_post_ack(struct rudp_peer *peer)
 
 /* Sender functions */
 
-rudp_error_t rudp_peer_send_unreliable(
-    struct rudp_peer *peer,
-    struct rudp_packet_chain *pc)
+static void
+peer_sendq_append_unreliable(struct rudp_peer *peer,
+        struct rudp_packet_chain *pc, unsigned int index, unsigned int length)
 {
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = 0;
     pc->packet->header.dummy = 0;
-    pc->packet->header.segment_index = 0;
-    pc->packet->header.segments_size = htons(1);
+    pc->packet->header.segment_index = htons(index);
+    pc->packet->header.segments_size = htons(length);
     pc->packet->header.reliable = htons(peer->out_seq_reliable);
     pc->packet->header.unreliable = htons(++(peer->out_seq_unreliable));
 
@@ -673,51 +674,21 @@ rudp_error_t rudp_peer_send_unreliable(
                     ntohs(pc->packet->header.unreliable));
 
     rudp_list_append(&peer->sendq, &pc->chain_item);
-
-    peer_service_schedule(peer);
-    return peer->sendto_err;
 }
 
-rudp_error_t rudp_peer_send_unreliable_segments(
-    struct rudp_peer *peer,
-    struct rudp_packet_chain **pc,
-    size_t num_segments)
+static void
+peer_sendq_append_reliable(struct rudp_peer *peer,
+        struct rudp_packet_chain *pc, unsigned int index, unsigned int length)
 {
-    int i=0;
-    for (i = 0; i < num_segments; i++) {
-        pc[i]->packet->header.version = RUDP_VERSION;
-        pc[i]->packet->header.opt = 0;
-        pc[i]->packet->header.dummy = 0;
-        pc[i]->packet->header.reliable = htons(peer->out_seq_reliable);
-        pc[i]->packet->header.unreliable = htons(++(peer->out_seq_unreliable));
-        pc[i]->packet->header.segments_size = htons(num_segments);
-        pc[i]->packet->header.segment_index = htons(i);
+    peer->out_seq_unreliable = 0;
 
-        rudp_log_printf(peer->rudp, RUDP_LOG_IO,
-                        ">>> outgoing reliable %s (%d) %04x:%04x\n",
-                        rudp_command_name(pc[i]->packet->header.command),
-                        pc[i]->packet->header.command,
-                        ntohs(pc[i]->packet->header.reliable),
-                        ntohs(pc[i]->packet->header.unreliable));
-
-        rudp_list_append(&peer->sendq, &pc[i]->chain_item);
-    }
-
-    peer_service_schedule(peer);
-    return peer->sendto_err;
-}
-
-rudp_error_t rudp_peer_send_reliable(
-    struct rudp_peer *peer,
-    struct rudp_packet_chain *pc)
-{
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = RUDP_OPT_RELIABLE;
     pc->packet->header.dummy = 0;
-    pc->packet->header.segment_index = 0;
-    pc->packet->header.segments_size = htons(1);
+    pc->packet->header.segment_index = htons(index);
+    pc->packet->header.segments_size = htons(length);
     pc->packet->header.reliable = htons(++(peer->out_seq_reliable));
-    pc->packet->header.unreliable = 0;
+    pc->packet->header.unreliable = 0; /* htons(peer->out_seq_unreliable); */
 
     rudp_log_printf(peer->rudp, RUDP_LOG_IO,
                     ">>> outgoing reliable %s (%d) %04x:%04x\n",
@@ -727,38 +698,84 @@ rudp_error_t rudp_peer_send_reliable(
                     ntohs(pc->packet->header.unreliable));
 
     rudp_list_append(&peer->sendq, &pc->chain_item);
+}
 
-    peer->out_seq_unreliable = 0;
+rudp_error_t
+rudp_peer_send(struct rudp_base *rudp, struct rudp_peer *peer, int reliable,
+        int command, const void *data, const size_t size)
+{
+    struct rudp_packet_chain *pc;
+    size_t written, to_write;
+    size_t header_size = sizeof(struct rudp_packet_header);
+    size_t max_write = RUDP_RECV_BUFFER_SIZE - header_size;
+    unsigned int segments = (size / max_write) + ((size % max_write) != 0);
+    unsigned int segment;
+
+    if (peer == NULL || data == NULL || size <= 0)
+        return EINVAL;
+
+    if ((command + RUDP_CMD_APP) > 255)
+        return EINVAL;
+
+    written = 0;
+    for (segment = 0; segment < segments; segment++) {
+        to_write = RUDP_MIN(size - written, max_write);
+        pc = rudp_packet_chain_alloc(rudp, header_size + to_write);
+        memcpy(&pc->packet->data.data[0], (const char *)data + written, to_write);
+        written += to_write;
+        pc->packet->header.command = RUDP_CMD_APP + command;
+        if (reliable)
+            peer_sendq_append_reliable(peer, pc, segment, segments);
+        else
+            peer_sendq_append_unreliable(peer, pc, segment, segments);
+    }
+
     peer_service_schedule(peer);
     return peer->sendto_err;
 }
 
-rudp_error_t rudp_peer_send_reliable_segments(
-    struct rudp_peer *peer,
-    struct rudp_packet_chain **pc,
-    size_t num_segments)
+rudp_error_t
+rudp_peer_send_unreliable(struct rudp_peer *peer,
+        struct rudp_packet_chain *pc)
 {
-    int i=0;
-    for (i = 0; i < num_segments; i++) {
-        pc[i]->packet->header.version = RUDP_VERSION;
-        pc[i]->packet->header.opt = RUDP_OPT_RELIABLE;
-        pc[i]->packet->header.dummy = 0;
-        pc[i]->packet->header.reliable = htons(++(peer->out_seq_reliable));
-        pc[i]->packet->header.unreliable = 0;
-        pc[i]->packet->header.segments_size = htons(num_segments);
-        pc[i]->packet->header.segment_index = htons(i);
+    peer_sendq_append_unreliable(peer, pc, 0, 1);
 
-        rudp_log_printf(peer->rudp, RUDP_LOG_IO,
-                        ">>> outgoing reliable %s (%d) %04x:%04x\n",
-                        rudp_command_name(pc[i]->packet->header.command),
-                        pc[i]->packet->header.command,
-                        ntohs(pc[i]->packet->header.reliable),
-                        ntohs(pc[i]->packet->header.unreliable));
+    peer_service_schedule(peer);
+    return peer->sendto_err;
+}
 
-        rudp_list_append(&peer->sendq, &pc[i]->chain_item);
-    }
+rudp_error_t
+rudp_peer_send_unreliable_segments(struct rudp_peer *peer,
+        struct rudp_packet_chain **pc, size_t length)
+{
+    int index;
 
-    peer->out_seq_unreliable = 0;
+    for (index = 0; index < length; index++)
+        peer_sendq_append_unreliable(peer, *(pc++), index, length);
+
+    peer_service_schedule(peer);
+    return peer->sendto_err;
+}
+
+rudp_error_t
+rudp_peer_send_reliable(struct rudp_peer *peer,
+        struct rudp_packet_chain *pc)
+{
+    peer_sendq_append_reliable(peer, pc, 0, 1);
+
+    peer_service_schedule(peer);
+    return peer->sendto_err;
+}
+
+rudp_error_t
+rudp_peer_send_reliable_segments(struct rudp_peer *peer,
+        struct rudp_packet_chain **pc, size_t length)
+{
+    int index;
+
+    for (index = 0; index < length; index++)
+        peer_sendq_append_reliable(peer, *(pc++), index, length);
+
     peer_service_schedule(peer);
     return peer->sendto_err;
 }

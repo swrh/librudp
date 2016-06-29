@@ -231,6 +231,13 @@ rudp_error_t rudp_peer_incoming_packet(
     struct rudp_peer *peer,
     struct rudp_packet_chain *pc);
 
+RUDP_EXPORT
+rudp_error_t rudp_peer_send(
+        struct rudp_base *rudp,
+        struct rudp_peer *peer,
+        int reliable, int command,
+        const void *data, const size_t size);
+
 /**
    @this sends unreliable data to a peer.
 
@@ -246,8 +253,20 @@ RUDP_EXPORT
 rudp_error_t rudp_peer_send_unreliable(
     struct rudp_peer *peer,
     struct rudp_packet_chain *pc);
-RUDP_EXPORT
 
+/**
+   @this sends unreliable data to a peer.
+
+   Calling code doesn't have to initialize the packet header.
+
+   @param peer Destination peer
+   @param pc Array of packet chain elements
+   @param segments_size number of packet chains
+
+   Peer handling code becomes owner of the @tt pc pointer, and may
+   free it when needed.
+ */
+RUDP_EXPORT
 rudp_error_t rudp_peer_send_unreliable_segments(
     struct rudp_peer *peer,
     struct rudp_packet_chain **pc,
@@ -282,6 +301,7 @@ rudp_error_t rudp_peer_send_reliable(
    free it when needed.
  */
 
+RUDP_EXPORT
 rudp_error_t rudp_peer_send_reliable_segments(
     struct rudp_peer *peer,
     struct rudp_packet_chain **pc,
