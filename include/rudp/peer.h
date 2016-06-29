@@ -115,10 +115,19 @@ struct rudp_peer
     struct rudp_peer_handler handler;
     struct rudp_address address;
     struct rudp_endpoint *endpoint;
+    struct {
+        /** Maximum retransmission timeout. */
+        rudp_time_t max_rto;
+        rudp_time_t action;
+        rudp_time_t drop;
+    } timeout;
     rudp_time_t abs_timeout_deadline;
     rudp_time_t last_out_time;
+    /** Smoothed round-trip time. */
     rudp_time_t srtt;
+    /** Round-trip time variation. */
     rudp_time_t rttvar;
+    /** Retransmission timeout. */
     rudp_time_t rto;
     uint16_t in_seq_reliable;
     uint16_t in_seq_unreliable;
@@ -294,6 +303,15 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer);
  */
 RUDP_EXPORT
 rudp_error_t rudp_peer_send_close_noqueue(struct rudp_peer *peer);
+
+RUDP_EXPORT
+void rudp_peer_set_timeout_max_rto(struct rudp_peer *peer, rudp_time_t max_rto);
+
+RUDP_EXPORT
+void rudp_peer_set_timeout_drop(struct rudp_peer *peer, rudp_time_t drop);
+
+RUDP_EXPORT
+void rudp_peer_set_timeout_action(struct rudp_peer *peer, rudp_time_t action);
 
 #ifdef __cplusplus
 }

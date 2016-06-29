@@ -44,10 +44,6 @@ static void rudp_peer_handle_segment(
     const struct rudp_packet_header *header,
     struct rudp_packet_chain *pc);
 
-#define ACTION_TIMEOUT 5000
-#define DROP_TIMEOUT (ACTION_TIMEOUT * 2)
-#define MAX_RTO 15000
-
 enum peer_state
 {
     PEER_NEW,
@@ -76,7 +72,7 @@ rudp_peer_reset(struct rudp_peer *peer)
     if (peer->ev != NULL)
         evtimer_del(peer->ev);
 
-    peer->abs_timeout_deadline = rudp_timestamp() + DROP_TIMEOUT;
+    peer->abs_timeout_deadline = rudp_timestamp() + peer->timeout.drop;
     peer->in_seq_reliable = (uint16_t)-1;
     peer->in_seq_unreliable = 0;
     peer->out_seq_reliable = rudp_random();
@@ -86,7 +82,7 @@ rudp_peer_reset(struct rudp_peer *peer)
     peer->last_out_time = rudp_timestamp();
     peer->srtt = 100;
     peer->rttvar = peer->srtt / 2;
-    peer->rto = MAX_RTO;
+    peer->rto = peer->timeout.max_rto;
     peer->must_ack = 0;
     peer->sendto_err = 0;
 }
@@ -104,6 +100,10 @@ void rudp_peer_init(
     peer->rudp = rudp;
     peer->handler = *handler;
     peer->ev = evtimer_new(rudp->eb, _peer_service, peer);
+
+    peer->timeout.max_rto = rudp->default_timeout.max_rto;
+    peer->timeout.drop = rudp->default_timeout.drop;
+    peer->timeout.action = rudp->default_timeout.action;
 
     rudp_peer_reset(peer);
 
@@ -154,8 +154,8 @@ static void peer_update_rtt(struct rudp_peer *peer, rudp_time_t last_rtt)
     peer->rttvar = (3 * peer->rttvar + labs((long)(peer->srtt - last_rtt))) / 4;
     peer->srtt = (7 * peer->srtt + last_rtt) / 8;
     peer->rto = peer->srtt;
-    if ( peer->rto > MAX_RTO )
-        peer->rto = MAX_RTO;
+    if (peer->rto > peer->timeout.max_rto)
+        peer->rto = peer->timeout.max_rto;
 
     rudp_log_printf(peer->rudp, RUDP_LOG_INFO,
                     "Timeout state: rttvar %d srtt %d rto %d\n",
@@ -165,8 +165,8 @@ static void peer_update_rtt(struct rudp_peer *peer, rudp_time_t last_rtt)
 static void peer_rto_backoff(struct rudp_peer *peer)
 {
     peer->rto *= 2;
-    if ( peer->rto > MAX_RTO )
-        peer->rto = MAX_RTO;
+    if (peer->rto > peer->timeout.max_rto)
+        peer->rto = peer->timeout.max_rto;
 
     rudp_log_printf(peer->rudp, RUDP_LOG_INFO,
                     "Timeout state: rttvar %d srtt %d rto %d\n",
@@ -310,7 +310,7 @@ static void
 peer_service_schedule(struct rudp_peer *peer)
 {
     // If nothing in sendq: reschedule service for later
-    rudp_time_t delta = ACTION_TIMEOUT;
+    rudp_time_t delta = peer->timeout.action;
 
     // just abuse for_each to get head, if it exists
     struct rudp_packet_chain *head;
@@ -481,11 +481,11 @@ rudp_error_t rudp_peer_incoming_packet(
 //        return RUDP_EINVAL;
 
     case RETRANSMITTED:
-        peer->abs_timeout_deadline = rudp_timestamp() + DROP_TIMEOUT;
+        peer->abs_timeout_deadline = rudp_timestamp() + peer->timeout.drop;
         break;
 
     case SEQUENCED:
-        peer->abs_timeout_deadline = rudp_timestamp() + DROP_TIMEOUT;
+        peer->abs_timeout_deadline = rudp_timestamp() + peer->timeout.drop;
 
         switch ( header->command )
         {
@@ -894,7 +894,7 @@ static void peer_service(struct rudp_peer *peer)
           situation. Handle retries and final timeout.
         */
         rudp_time_t out_delta = rudp_timestamp() - peer->last_out_time;
-        if ( out_delta > ACTION_TIMEOUT )
+        if (out_delta > peer->timeout.action)
             peer_ping(peer);
     }
 
@@ -912,4 +912,22 @@ int rudp_peer_address_compare(const struct rudp_peer *peer,
                               const struct sockaddr_storage *addr)
 {
     return rudp_address_compare(&peer->address, addr);
+}
+
+void
+rudp_peer_set_timeout_max_rto(struct rudp_peer *peer, rudp_time_t max_rto)
+{
+    peer->timeout.max_rto = max_rto;
+}
+
+void
+rudp_peer_set_timeout_drop(struct rudp_peer *peer, rudp_time_t drop)
+{
+    peer->timeout.drop = drop;
+}
+
+void
+rudp_peer_set_timeout_action(struct rudp_peer *peer, rudp_time_t action)
+{
+    peer->timeout.action = action;
 }

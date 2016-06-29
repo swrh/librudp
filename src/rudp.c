@@ -31,6 +31,10 @@ void rudp_init(
     rudp_list_init(&rudp->free_packet_list);
     rudp->free_packets = 0;
     rudp->allocated_packets = 0;
+
+    rudp->default_timeout.max_rto = 15000;
+    rudp->default_timeout.action = 5000;
+    rudp->default_timeout.drop = rudp->default_timeout.action * 2;
 }
 
 static

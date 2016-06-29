@@ -70,9 +70,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <rudp/list.h>
-#include <rudp/error.h>
 #include <rudp/compiler.h>
+#include <rudp/error.h>
+#include <rudp/list.h>
+#include <rudp/time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,6 +158,12 @@ struct rudp_base
     struct rudp_list free_packet_list;
     uint16_t allocated_packets;
     uint16_t free_packets;
+    struct {
+        /** Maximum retransmission timeout. */
+        rudp_time_t max_rto;
+        rudp_time_t action;
+        rudp_time_t drop;
+    } default_timeout;
 };
 
 /**
