@@ -32,8 +32,14 @@ void rudp_init(
     rudp->free_packets = 0;
     rudp->allocated_packets = 0;
 
-    rudp->default_timeout.max_rto = 15000;
+    /* RFC 6298 2.1 - RTO of at least 1 second but as we probably are using a
+     * low quality connection, use the old default of 3 seconds (RFC 2988). */
+    rudp->default_timeout.min_rto = 3000;
+    /* RFC 6298 2.5 - Maximum RTO of 60 seconds. */
+    rudp->default_timeout.max_rto = 60000;
+    /* Timeout used for ping, mainly. */
     rudp->default_timeout.action = 5000;
+    /* Does it make any sense to have a drop timeout lesser than max_rto? */
     rudp->default_timeout.drop = rudp->default_timeout.action * 2;
 }
 

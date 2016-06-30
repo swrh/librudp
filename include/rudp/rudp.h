@@ -159,6 +159,8 @@ struct rudp_base
     uint16_t allocated_packets;
     uint16_t free_packets;
     struct {
+        /** Minimum retransmission timeout. */
+        rudp_time_t min_rto;
         /** Maximum retransmission timeout. */
         rudp_time_t max_rto;
         rudp_time_t action;

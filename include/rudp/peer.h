@@ -116,6 +116,8 @@ struct rudp_peer
     struct rudp_address address;
     struct rudp_endpoint *endpoint;
     struct {
+        /** Minimum retransmission timeout. */
+        rudp_time_t min_rto;
         /** Maximum retransmission timeout. */
         rudp_time_t max_rto;
         rudp_time_t action;
@@ -323,6 +325,9 @@ rudp_error_t rudp_peer_send_connect(struct rudp_peer *peer);
  */
 RUDP_EXPORT
 rudp_error_t rudp_peer_send_close_noqueue(struct rudp_peer *peer);
+
+RUDP_EXPORT
+void rudp_peer_set_timeout_min_rto(struct rudp_peer *peer, rudp_time_t min_rto);
 
 RUDP_EXPORT
 void rudp_peer_set_timeout_max_rto(struct rudp_peer *peer, rudp_time_t max_rto);
