@@ -10,6 +10,7 @@
  */
 
 #include <err.h>
+#include <getopt.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
@@ -85,9 +86,39 @@ int main(int argc, char **argv)
     struct event *ev;
     struct rudp_base rudp;
     const struct rudp_handler *my_handler = RUDP_HANDLER_DEFAULT;
+    char *p;
+    unsigned long int port;
+    int opt;
 
-    if ( argc > 1 && !strcmp(argv[1], "-v") )
-        my_handler = &verbose_handler;
+    while ((opt = getopt(argc, argv, "hv")) != -1) {
+        switch (opt) {
+        case 'h':
+            fprintf(stdout, "usage: %s [-hv] PORT\n", argv[0]);
+            exit(EXIT_SUCCESS);
+            break;
+        case 'v':
+            my_handler = &verbose_handler;
+            break;
+        default: /* '?' */
+            fprintf(stderr, "usage: %s [-hv] PORT\n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    argc -= optind;
+    argv += optind;
+    opt = 0;
+
+    if (argc <= opt)
+        errx(EXIT_FAILURE, "missing port argument");
+
+    p = argv[opt++];
+    port = strtoul(p, &p, 10);
+    if (port < 1 || port > 65535 || p == NULL || *p != 0)
+        errx(EXIT_FAILURE, "invalid port argument");
+
+    if (argc != opt)
+        errx(EXIT_FAILURE, "excess number of arguments");
 
     rudp_init(&rudp, eb, my_handler);
 
@@ -96,7 +127,7 @@ int main(int argc, char **argv)
     address.s_addr = INADDR_ANY;
 
     rudp_server_init(&server, &rudp, &handler, NULL);
-    rudp_server_set_ipv4(&server, &address, 4242);
+    rudp_server_set_ipv4(&server, &address, port);
     display_err(  rudp_server_bind(&server)  );
 
     if (event_add(ev, NULL) == -1)
