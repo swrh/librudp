@@ -96,6 +96,8 @@ rudp_server_close(struct rudp_server *server)
     struct server_peer *peer, *tmp;
     rudp_list_for_each_safe(struct server_peer *, peer, tmp, &server->peer_list, server_item)
     {
+        rudp_log_printf(peer->base.rudp, RUDP_LOG_INFO, "Peer dropped (server closed)\n");
+
         peer->server->handler.peer_dropped(peer->server, &peer->base, peer->server->arg);
         rudp_server_client_close(server, &peer->base);
     }

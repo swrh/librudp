@@ -134,6 +134,8 @@ void client_peer_dropped(struct rudp_peer *peer)
     client->peer_valid = 0;
     rudp_endpoint_close(&client->endpoint);
 
+    rudp_log_printf(peer->rudp, RUDP_LOG_INFO, "Peer dropped (server lost)\n");
+
     client->handler.server_lost(client, client->arg);
 }
 
