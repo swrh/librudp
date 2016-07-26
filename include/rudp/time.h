@@ -52,9 +52,9 @@ rudp_time_t rudp_timestamp(void)
 {
 #if defined(_WIN32)
     return (rudp_time_t)GetTickCount64();
-#elif defined(CLOCK_MONOTONIC)
+#elif defined(CLOCK_MONOTONIC_RAW)
     struct timespec ts;
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1)
+    if (clock_gettime(CLOCK_MONOTONIC_RAW, &ts) == -1)
         return -1;
     return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 #else
