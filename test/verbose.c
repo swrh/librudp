@@ -61,6 +61,7 @@ void _rudp_log(struct rudp_base *rudp,
     struct tm localtime_buf;
     char asctime_buf[26], *time_str, *p;
     char line_buf[1024];
+    rudp_time_t ts;
 
     ltime = time(NULL); /* get current cal time */
     time_str = asctime_r(localtime_r(&ltime, &localtime_buf), asctime_buf);
@@ -80,10 +81,9 @@ void _rudp_log(struct rudp_base *rudp,
 
     line_buf[0] = 0;
 
-    struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+    ts = rudp_timestamp();
 
-    snprintf(line_buf + strlen(line_buf), sizeof(line_buf) - strlen(line_buf), "%16llu.%09ld ", (unsigned long long int)tp.tv_sec, tp.tv_nsec);
+    snprintf(line_buf + strlen(line_buf), sizeof(line_buf) - strlen(line_buf), "%16llu.%03u ", (unsigned long long int)(ts / 1000), (unsigned int)(ts % 1000));
     snprintf(line_buf + strlen(line_buf), sizeof(line_buf) - strlen(line_buf), "%16llu %26s %s %6s ", (unsigned long long int)ltime, __progname, time_str, level_str);
     vsnprintf(line_buf + strlen(line_buf), sizeof(line_buf) - strlen(line_buf), fmt, arg);
 
