@@ -673,13 +673,13 @@ void peer_post_ack(struct rudp_peer *peer)
 
 static void
 peer_sendq_append_unreliable(struct rudp_peer *peer,
-        struct rudp_packet_chain *pc, unsigned int index, unsigned int length)
+        struct rudp_packet_chain *pc, size_t index, size_t length)
 {
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = 0;
     pc->packet->header.dummy = 0;
-    pc->packet->header.segment_index = htons(index);
-    pc->packet->header.segments_size = htons(length);
+    pc->packet->header.segment_index = htons((unsigned int)index);
+    pc->packet->header.segments_size = htons((unsigned int)length);
     pc->packet->header.reliable = htons(peer->out_seq_reliable);
     pc->packet->header.unreliable = htons(++(peer->out_seq_unreliable));
 
@@ -695,15 +695,15 @@ peer_sendq_append_unreliable(struct rudp_peer *peer,
 
 static void
 peer_sendq_append_reliable(struct rudp_peer *peer,
-        struct rudp_packet_chain *pc, unsigned int index, unsigned int length)
+        struct rudp_packet_chain *pc, size_t index, size_t length)
 {
     peer->out_seq_unreliable = 0;
 
     pc->packet->header.version = RUDP_VERSION;
     pc->packet->header.opt = RUDP_OPT_RELIABLE;
     pc->packet->header.dummy = 0;
-    pc->packet->header.segment_index = htons(index);
-    pc->packet->header.segments_size = htons(length);
+    pc->packet->header.segment_index = htons((unsigned int)index);
+    pc->packet->header.segments_size = htons((unsigned int)length);
     pc->packet->header.reliable = htons(++(peer->out_seq_reliable));
     pc->packet->header.unreliable = 0; /* htons(peer->out_seq_unreliable); */
 
@@ -725,8 +725,8 @@ rudp_peer_send(struct rudp_base *rudp, struct rudp_peer *peer, int reliable,
     size_t written, to_write;
     size_t header_size = sizeof(struct rudp_packet_header);
     size_t max_write = RUDP_RECV_BUFFER_SIZE - header_size;
-    unsigned int segments = (size / max_write) + ((size % max_write) != 0);
-    unsigned int segment;
+    size_t segments = (size / max_write) + ((size % max_write) != 0);
+    size_t segment;
 
     if (peer == NULL || data == NULL || size <= 0)
         return EINVAL;
@@ -765,7 +765,7 @@ rudp_error_t
 rudp_peer_send_unreliable_segments(struct rudp_peer *peer,
         struct rudp_packet_chain **pc, size_t length)
 {
-    int index;
+    size_t index;
 
     for (index = 0; index < length; index++)
         peer_sendq_append_unreliable(peer, *(pc++), index, length);
@@ -788,7 +788,7 @@ rudp_error_t
 rudp_peer_send_reliable_segments(struct rudp_peer *peer,
         struct rudp_packet_chain **pc, size_t length)
 {
-    int index;
+    size_t index;
 
     for (index = 0; index < length; index++)
         peer_sendq_append_reliable(peer, *(pc++), index, length);
