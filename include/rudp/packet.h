@@ -149,6 +149,7 @@ enum rudp_command
    Packet header structure. All fields in this structure should be
    transmitted in network order.
  */
+RUDP_PACKED(
 struct rudp_packet_header
 {
     uint8_t version;
@@ -160,38 +161,46 @@ struct rudp_packet_header
     uint16_t unreliable;
     uint16_t segments_size;
     uint16_t segment_index;
-} __attribute__((packed));
+}
+);
 
 /**
    Connection request packet (@xref {protocol}).
  */
+RUDP_PACKED(
 struct rudp_packet_conn_req
 {
     struct rudp_packet_header header;
     uint32_t data;
-} __attribute__((packed));
+}
+);
 
 /**
    Connection response packet (@xref {protocol}).
  */
+RUDP_PACKED(
 struct rudp_packet_conn_rsp
 {
     struct rudp_packet_header header;
     uint32_t accepted;
-} __attribute__((packed));
+}
+);
 
 /**
    Data packet (@xref {protocol}).
  */
+RUDP_PACKED(
 struct rudp_packet_data
 {
     struct rudp_packet_header header;
     uint8_t data[0];
-} __attribute__((packed));
+}
+);
 
 /**
    Structure factoring all the possible packet types.
  */
+RUDP_PACKED(
 struct rudp_packet
 {
     union {
@@ -200,7 +209,8 @@ struct rudp_packet
         struct rudp_packet_conn_rsp conn_rsp;
         struct rudp_packet_data data;
     };
-} __attribute__((packed));
+}
+);
 
 /**
    Packet chain structure

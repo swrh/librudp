@@ -34,4 +34,11 @@
 #define RUDP_DEPRECATED
 #endif
 
+/* GCC packed */
+#if defined(__GNUC__) && __GNUC__ >= 4 /** mkdoc:skip */
+#define RUDP_PACKED(x) x __attribute__ ((packed))
+#else
+#define RUDP_PACKED(x) __pragma(pack(push, 1)) x __pragma(pack(pop))
+#endif
+
 #endif
