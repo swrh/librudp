@@ -40,7 +40,7 @@ static int peer_handle_ack(struct rudp_peer *peer, uint16_t ack);
 
 static void peer_service(struct rudp_peer *peer);
 static void _peer_service(evutil_socket_t fd, short flags, void *arg);
-static void peer_service_schedule(struct rudp_peer *peer);
+static int peer_service_schedule(struct rudp_peer *peer);
 static void rudp_peer_handle_segment(
     struct rudp_peer *peer,
     const struct rudp_packet_header *header,
@@ -328,9 +328,12 @@ void peer_handle_pong(
     peer_update_rtt(peer, delta);
 }
 
-static void
+static int
 peer_service_schedule(struct rudp_peer *peer)
 {
+    if (peer == NULL || peer->ev == NULL)
+        return EINVAL;
+
     rudp_time_t timestamp = rudp_timestamp();
 
     // If nothing in sendq: reschedule service for later
@@ -366,6 +369,8 @@ peer_service_schedule(struct rudp_peer *peer)
     /* Avoid double evtimer_add(). */
     evtimer_del(peer->ev);
     evtimer_add(peer->ev, &tv);
+
+    return 0;
 }
 
 static
@@ -494,7 +499,6 @@ rudp_error_t rudp_peer_incoming_packet(
                             peer->state);
         }
         break;
-//        return RUDP_EINVAL;
 
     case RETRANSMITTED:
         peer->abs_timeout_deadline = rudp_timestamp() + peer->timeout.drop;
@@ -563,9 +567,7 @@ rudp_error_t rudp_peer_incoming_packet(
         peer_post_ack(peer);
     }
 
-    peer_service_schedule(peer);
-
-    return 0;
+    return peer_service_schedule(peer);
 }
 
 
@@ -721,6 +723,7 @@ rudp_error_t
 rudp_peer_send(struct rudp_base *rudp, struct rudp_peer *peer, int reliable,
         int command, const void *data, const size_t size)
 {
+    int ret;
     struct rudp_packet_chain *pc;
     size_t written, to_write;
     size_t header_size = sizeof(struct rudp_packet_header);
@@ -747,7 +750,9 @@ rudp_peer_send(struct rudp_base *rudp, struct rudp_peer *peer, int reliable,
             peer_sendq_append_unreliable(peer, pc, segment, segments);
     }
 
-    peer_service_schedule(peer);
+    ret = peer_service_schedule(peer);
+    if (ret != 0)
+        return ret;
     return peer->sendto_err;
 }
 
@@ -755,9 +760,12 @@ rudp_error_t
 rudp_peer_send_unreliable(struct rudp_peer *peer,
         struct rudp_packet_chain *pc)
 {
+    int ret;
     peer_sendq_append_unreliable(peer, pc, 0, 1);
 
-    peer_service_schedule(peer);
+    ret = peer_service_schedule(peer);
+    if (ret != 0)
+        return ret;
     return peer->sendto_err;
 }
 
@@ -765,12 +773,15 @@ rudp_error_t
 rudp_peer_send_unreliable_segments(struct rudp_peer *peer,
         struct rudp_packet_chain **pc, size_t length)
 {
+    int ret;
     size_t index;
 
     for (index = 0; index < length; index++)
         peer_sendq_append_unreliable(peer, *(pc++), index, length);
 
-    peer_service_schedule(peer);
+    ret = peer_service_schedule(peer);
+    if (ret != 0)
+        return ret;
     return peer->sendto_err;
 }
 
@@ -778,9 +789,12 @@ rudp_error_t
 rudp_peer_send_reliable(struct rudp_peer *peer,
         struct rudp_packet_chain *pc)
 {
+    int ret;
     peer_sendq_append_reliable(peer, pc, 0, 1);
 
-    peer_service_schedule(peer);
+    ret = peer_service_schedule(peer);
+    if (ret != 0)
+        return ret;
     return peer->sendto_err;
 }
 
@@ -788,12 +802,15 @@ rudp_error_t
 rudp_peer_send_reliable_segments(struct rudp_peer *peer,
         struct rudp_packet_chain **pc, size_t length)
 {
+    int ret;
     size_t index;
 
     for (index = 0; index < length; index++)
         peer_sendq_append_reliable(peer, *(pc++), index, length);
 
-    peer_service_schedule(peer);
+    ret = peer_service_schedule(peer);
+    if (ret != 0)
+        return ret;
     return peer->sendto_err;
 }
 
