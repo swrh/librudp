@@ -257,7 +257,7 @@ rudp_error_t rudp_server_set_hostname(
    @param server An initialized server context structure
    @param addr IPv4 or IPv6 address to use
    @param addrlen Size of the address structure
-   @returns 0 on success, EAFNOSUPPORT if address family is not supported
+   @returns 0 on success, EAFNOSUPPORT (or WSAEAFNOSUPPORT) if address family is not supported
  */
 RUDP_EXPORT
 rudp_error_t rudp_server_set_addr(

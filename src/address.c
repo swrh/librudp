@@ -10,7 +10,7 @@
  */
 
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 # include <arpa/inet.h>
 # include <sys/socket.h>
 # include <netinet/in.h>
@@ -207,7 +207,11 @@ rudp_error_t rudp_address_set(
         rua->hostname = inet_ntop_strdup(AF_INET6, &((struct sockaddr_in6 *)sockaddr)->sin6_addr);
         break;
     default:
+#ifdef _WIN32
+        return WSAEAFNOSUPPORT;
+#else
         return EAFNOSUPPORT;
+#endif
     }
 
     rua->text[0] = 0;
@@ -249,7 +253,11 @@ rudp_error_t rudp_address_next(
         return 0;
 
     case RUDP_RESOLV_NONE:
+#ifdef _WIN32
+        return WSAEDESTADDRREQ;
+#else
         return EDESTADDRREQ;
+#endif
 
     case RUDP_RESOLV_FAILED:
     case RUDP_RESOLV_ERROR:
@@ -285,7 +293,11 @@ rudp_address_get(
         return 0;
 
     case RUDP_RESOLV_NONE:
+#ifdef _WIN32
+        return WSAEDESTADDRREQ;
+#else
         return EDESTADDRREQ;
+#endif
 
     case RUDP_RESOLV_FAILED:
     case RUDP_RESOLV_ERROR:

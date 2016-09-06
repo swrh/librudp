@@ -89,7 +89,11 @@ rudp_error_t rudp_endpoint_bind(struct rudp_endpoint *endpoint)
     switch (err) {
     case 0:
         break;
-    case EDESTADDRREQ:
+#ifdef _WIN32
+        return WSAEDESTADDRREQ;
+#else
+        return EDESTADDRREQ;
+#endif
         addr = NULL;
         break;
     default:
@@ -126,7 +130,7 @@ rudp_error_t rudp_endpoint_bind(struct rudp_endpoint *endpoint)
 
     if (event_add(endpoint->ev, NULL) == -1) {
         rudp_endpoint_close(endpoint);
-        return ECANCELED;
+        return EFAULT;
     }
 
     return 0;

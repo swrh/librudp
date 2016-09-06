@@ -96,6 +96,11 @@ set(HDR_PUBLIC
     include/rudp/time.h
     )
 
+if(WIN32)
+    # Build for Windows 7.
+    add_definitions(-D_WIN32_WINNT=0x0601)
+endif()
+
 source_group("Headers Private"  FILES ${HDR_PRIVATE})
 source_group("Headers Public"   FILES ${HDR_PUBLIC})
 source_group("Source Core"      FILES ${SRC_CORE})
@@ -106,7 +111,19 @@ add_library(rudp SHARED
     ${SRC_CORE}
     )
 
-target_link_libraries(rudp ${LIBEVENT_LIBRARIES})
+set(LIB_PLATFORM
+    )
+
+if(WIN32)
+    list(APPEND LIB_PLATFORM
+        ws2_32
+        )
+endif()
+
+target_link_libraries(rudp
+    ${LIB_PLATFORM}
+    ${LIBEVENT_LIBRARIES}
+    )
 
 set_target_properties(rudp PROPERTIES PUBLIC_HEADER "${HDR_PUBLIC}")
 

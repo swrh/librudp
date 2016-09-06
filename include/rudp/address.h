@@ -42,7 +42,7 @@
    corresponding to an hostname.
  */
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 # include <sys/socket.h>
 # include <netinet/in.h>
 #else
@@ -197,7 +197,7 @@ void rudp_address_set_ipv6(
    @param rua The address handle
    @param addr IPv4 or IPv6 address structure to set
    @param addrlen Size of the address structure
-   @returns 0 on success, EAFNOSUPPORT if address family is not supported
+   @returns 0 on success, EAFNOSUPPORT (or WSAEAFNOSUPPORT) if address family is not supported
  */
 RUDP_EXPORT
 rudp_error_t rudp_address_set(
