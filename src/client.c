@@ -161,9 +161,9 @@ void client_handle_endpoint_packet(struct rudp_endpoint *endpoint,
     rudp_log_printf(client->rudp, RUDP_LOG_INFO,
                     "Endpoint handling packet\n");
 
+    int was_connected = client->connected;
     rudp_error_t err = rudp_peer_incoming_packet(&client->peer, pc);
-    if ( err == 0 && client->connected == 0 )
-    {
+    if (err == 0 && was_connected == 0) {
         client->connected = 1;
         client->handler.connected(client, client->arg);
     }
