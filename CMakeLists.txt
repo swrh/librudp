@@ -3,7 +3,7 @@ project(librudp C)
 
 set(RUDP_MAJOR_VERSION 0)
 set(RUDP_MINOR_VERSION 4)
-set(RUDP_PATCH_VERSION 2)
+set(RUDP_PATCH_VERSION 3)
 set(RUDP_VERSION ${RUDP_MAJOR_VERSION}.${RUDP_MINOR_VERSION}.${RUDP_PATCH_VERSION})
 
 # Offer the user the choice of overriding the installation directories
