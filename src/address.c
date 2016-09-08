@@ -119,6 +119,7 @@ rudp_address_deinit(struct rudp_address *rua)
     rua->addr = NULL;
 
     rua->text[0] = 0;
+    rua->rudp = NULL;
 }
 
 void rudp_address_init(struct rudp_address *rua, struct rudp_base *rudp)

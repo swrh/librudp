@@ -142,6 +142,8 @@ rudp_peer_deinit(struct rudp_peer *peer)
         event_free(peer->ev);
         peer->ev = NULL;
     }
+
+    peer->rudp = NULL;
 }
 
 void
@@ -849,7 +851,7 @@ rudp_peer_send_close_noqueue(struct rudp_peer *peer)
 {
     struct rudp_packet_header header;
 
-    if (peer == NULL)
+    if (peer == NULL || peer->rudp == NULL)
         return EINVAL;
 
     memset(&header, 0, sizeof(header));
