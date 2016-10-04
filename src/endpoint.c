@@ -169,8 +169,13 @@ rudp_error_t rudp_endpoint_recv(struct rudp_endpoint *endpoint,
     ret = recvfrom(endpoint->socket_fd, data, (int)*len, 0,
                    (struct sockaddr *)addr, &slen);
 
-    if ( ret == -1 )
+    if (ret == -1) {
+#ifdef _WIN32
+        return WSAGetLastError();
+#else
         return errno;
+#endif
+    }
 
     *len = ret;
 
